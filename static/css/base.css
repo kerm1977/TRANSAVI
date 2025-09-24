@@ -14,6 +14,7 @@
     --text-color: #343a40;
     --border-radius: 8px;
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --sepia-text-color: #a49688; /* Color para los títulos en modo sepia */
 }
 
 /* ------------------------------------- */
@@ -151,7 +152,7 @@ body {
     color: #5a4f42;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
-.is-theme-sepia .header .title, .is-theme-sepia .header .subtitle { color: #5a4f42 !important; }
+.is-theme-sepia .header .title, .is-theme-sepia .header .subtitle { color: var(--sepia-text-color) !important; }
 .is-theme-sepia .label { color: #5a4f42; }
 .is-theme-sepia .input, .is-theme-sepia .textarea { 
     background-color: #fffaf0;
