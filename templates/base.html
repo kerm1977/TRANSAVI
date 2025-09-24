@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRANSAVICR</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* 1. Reset Global para Navbar Fijo */
+        html, body {
+            min-height: 100vh;
+            /* Eliminamos el centrado de body para que el contenido fluya libremente */
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch; /* Asegura que tome el ancho completo */
+            justify-content: flex-start;
+        }
+        
+        /* 2. Estilo específico para el Navbar Fijo */
+        #app-navbar {
+            position: fixed; /* Fija la posición */
+            top: 0; /* Lo ancla a la parte superior */
+            left: 0;
+            right: 0; /* Cubre todo el ancho */
+            z-index: 1000; /* Asegura que esté por encima de todo el contenido */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra para destacarlo */
+        }
+        
+        /* 3. Padding para el Contenido Principal */
+        /* Añadimos un padding al body para evitar que el contenido quede bajo el navbar */
+        body {
+            padding-top: 3.25rem; /* El navbar de Bulma por defecto tiene ~3.25rem de alto */
+        }
+
+        .container {
+            max-width: 800px;
+            padding: 2.5rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 2rem auto 0 auto; /* Centramos el contenedor de contenido */
+            width: 90%;
+            flex-grow: 1; /* Permite que el contenido ocupe el espacio restante */
+        }
+
+        /* --- TEMA CLARO (Por Defecto) --- */
+        .is-theme-light .navbar { background-color: #00d1b2 !important; }
+        .is-theme-light .button.is-primary { background-color: #00d1b2; border-color: transparent; }
+        .is-theme-light .title.has-text-primary { color: #00d1b2 !important; }
+        .is-theme-light .has-text-primary { color: #00d1b2 !important; }
+        .is-theme-light .has-text-grey { color: #69707a !important; }
+        
+        /* --- TEMA OSCURO --- */
+        .is-theme-dark {
+            background-color: #363636 !important;
+            color: #f5f5f5;
+        }
+        .is-theme-dark .navbar { background-color: #3273dc !important; }
+        .is-theme-dark .navbar-item, .is-theme-dark .navbar-link { color: #f5f5f5 !important; }
+        .is-theme-dark .navbar-burger span { background-color: #f5f5f5; }
+        .is-theme-dark .container {
+            background: #4a4a4a;
+            color: #f5f5f5;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        .is-theme-dark .header .title, .is-theme-dark .header .subtitle { color: #f5f5f5 !important; }
+        .is-theme-dark .label { color: #f5f5f5; }
+        .is-theme-dark .input, .is-theme-dark .textarea { background-color: #555; border-color: #666; color: #f5f5f5; }
+        .is-theme-dark .input::placeholder, .is-theme-dark .textarea::placeholder { color: #ccc; }
+        .is-theme-dark .button.is-primary { background-color: #3273dc; border-color: transparent; }
+        .is-theme-dark .title.has-text-primary, .is-theme-dark .title.has-text-info { color: #f5f5f5 !important; }
+        .is-theme-dark .has-text-grey { color: #ccc !important; }
+
+        /* --- TEMA SEPIA --- */
+        .is-theme-sepia {
+            background-color: #f7f3e8 !important;
+            color: #5a4f42;
+        }
+        .is-theme-sepia .navbar { background-color: #a49688 !important; }
+        .is-theme-sepia .navbar-item, .is-theme-sepia .navbar-link, 
+        .is-theme-sepia .navbar-item a, .is-theme-sepia .navbar-brand a { color: #3d342c !important; }
+        .is-theme-sepia .navbar-brand a .has-text-white { color: #3d342c !important; }
+        .is-theme-sepia .navbar-burger span { background-color: #3d342c; }
+        .is-theme-sepia .container {
+            background: #e9e4d9;
+            color: #5a4f42;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+        .is-theme-sepia .header .title, .is-theme-sepia .header .subtitle { color: #5a4f42 !important; }
+        .is-theme-sepia .label { color: #5a4f42; }
+        .is-theme-sepia .input, .is-theme-sepia .textarea { 
+            background-color: #fffaf0;
+            border-color: #a49688; 
+            color: #3d342c; 
+        }
+        .is-theme-sepia .input::placeholder, .is-theme-sepia .textarea::placeholder { color: #887a6d; }
+        .is-theme-sepia .button.is-primary { 
+            background-color: #a49688; 
+            border-color: transparent; 
+            color: #3d342c;
+        }
+        .is-theme-sepia .title.has-text-primary, .is-theme-sepia .title.has-text-info { color: #5a4f42 !important; }
+        .is-theme-sepia .has-text-grey { color: #5a4f42 !important; }
+        .is-theme-sepia .button.is-white {
+            background-color: #f7f3e8;
+            color: #5a4f42;
+        }
+
+
+        .header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .header .title {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .header .subtitle {
+            font-size: 1.25rem;
+        }
+
+        .footer {
+            width: 100%;
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem 0 20px 0;
+            color: #7a7a7a;
+        }
+
+        .notification {
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="is-theme-light">
+    
+    {% include 'navbar.html' %} <div class="container is-fluid"> <header class="header">
+            <h1 class="title is-2 has-text-primary">Solicitud de Transporte</h1>
+            <p class="subtitle is-5 has-text-grey">
+                Por favor, completa el formulario para solicitar una buseta.
+                <span class="icon is-medium">
+                    <i class="fas fa-bus"></i>
+                </span>
+            </p>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-5">
+                {% for category, message in messages %}
+                    <div class="notification {% if category == 'success' %}is-success{% else %}is-danger{% endif %} is-light">
+                        <button class="delete"></button>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+
+        <footer class="footer">
+            <p>&copy; 2024 Solicitud de Busetas. Todos los derechos reservados.</p>
+        </footer>
+    </div>
+   <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          
+            // 1. Funcionalidad de notificaciones
+            (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+                const $notification = $delete.parentNode;
+                $delete.addEventListener('click', () => {
+                    $notification.parentNode.removeChild($notification);
+                });
+            });
+
+            // 2. Funcionalidad del Menú Hamburguesa (Bulma) Y Colapso al Clic Exterior (MODIFICADO)
+            const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+            const $navbarMenu = document.getElementById('navbarBasicExample');
+            const $html = document.documentElement;
+
+            // Función para alternar el menú
+            function toggleNavbar() {
+                const burger = $navbarBurgers[0]; // Asume que solo hay un burger
+                burger.classList.toggle('is-active');
+                $navbarMenu.classList.toggle('is-active');
+            }
+
+            if ($navbarBurgers.length > 0) {
+                // Evento para el botón hamburguesa
+                $navbarBurgers.forEach(el => {
+                    el.addEventListener('click', toggleNavbar);
+                });
+            }
+            
+            // Nuevo: Evento para cerrar el menú al hacer clic fuera
+            document.addEventListener('click', (event) => {
+                // Si el menú está abierto
+                if ($navbarMenu.classList.contains('is-active')) {
+                    // Verificar si el clic no fue dentro del menú, ni en el botón hamburguesa
+                    const isClickInsideMenu = $navbarMenu.contains(event.target);
+                    const isClickOnBurger = $navbarBurgers[0].contains(event.target);
+                    
+                    if (!isClickInsideMenu && !isClickOnBurger) {
+                        // Si el clic fue "limpio" (fuera del navbar en modo móvil)
+                        toggleNavbar();
+                    }
+                }
+            });
+
+            
+            // 3. Funcionalidad de Cambio de Tema (Toggle - 3 temas)
+            const themeToggle = document.getElementById('theme-toggle');
+            const body = document.body;
+            const THEME_KEY = 'appTheme';
+            const themes = ['light', 'dark', 'sepia']; // Definición de los temas
+            
+            // Función para aplicar un tema
+            function applyTheme(theme) {
+                body.classList.remove('is-theme-light', 'is-theme-dark', 'is-theme-sepia');
+                body.classList.add('is-theme-' + theme);
+                localStorage.setItem(THEME_KEY, theme);
+                updateToggleText(theme);
+            }
+
+            // Función para actualizar el texto del botón
+            function updateToggleText(currentTheme) {
+                let iconClass = 'fas fa-palette';
+                let text = 'Cambiar Tema';
+                
+                if (currentTheme === 'dark') {
+                    iconClass = 'fas fa-sun';
+                    text = 'Tema Claro';
+                } else if (currentTheme === 'sepia') {
+                    iconClass = 'fas fa-moon';
+                    text = 'Tema Oscuro';
+                }
+                
+                themeToggle.innerHTML = `<span class="icon"><i class="${iconClass}"></i></span><span>${text}</span>`;
+            }
+
+            // Cargar tema guardado o usar el predeterminado
+            let currentTheme = localStorage.getItem(THEME_KEY) || 'light';
+            applyTheme(currentTheme);
+            
+            // Evento de clic para alternar temas
+            themeToggle.addEventListener('click', () => {
+                const currentIndex = themes.indexOf(currentTheme);
+                const nextIndex = (currentIndex + 1) % themes.length;
+                const nextTheme = themes[nextIndex];
+                
+                currentTheme = nextTheme;
+                applyTheme(currentTheme);
+            });
+            
+        });
+    </script>
+</body>
+</html>
