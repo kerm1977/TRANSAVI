@@ -78,6 +78,11 @@ body {
     font-size: 1.25rem;
 }
 
+/* Estilos de los títulos y subtítulos del index */
+.section-title {
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+}
 
 /* ------------------------------------- */
 /* ESTILOS DE TEMAS DINÁMICOS (Movidos desde base.html) */
@@ -100,6 +105,10 @@ body {
     background-color: #ffb700 !important;
     border-color: transparent !important;
     color: white !important;
+}
+/* Títulos y subtítulos del index en tema claro */
+.is-theme-light .section-title {
+    color: black !important;
 }
 
 
@@ -132,6 +141,10 @@ body {
 .is-theme-dark .button.is-primary { background-color: #3273dc; border-color: transparent; }
 .is-theme-dark .title.has-text-primary, .is-theme-dark .title.has-text-info { color: #f5f5f5 !important; }
 .is-theme-dark .has-text-grey { color: #ccc !important; }
+/* Títulos y subtítulos del index en tema oscuro */
+.is-theme-dark .section-title {
+    color: #ffb700 !important;
+}
 
 
 /* --- TEMA SEPIA --- */
@@ -175,6 +188,10 @@ body {
     background-color: #a49688 !important;
     border-color: transparent !important;
     color: white !important;
+}
+/* Títulos y subtítulos del index en tema sepia */
+.is-theme-sepia .section-title {
+    color: #5a4f42 !important;
 }
 
 
