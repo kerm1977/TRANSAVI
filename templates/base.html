@@ -158,7 +158,8 @@
 </head>
 <body class="is-theme-light">
     
-    {% include 'navbar.html' %} <div class="container is-fluid">
+    {% include 'navbar.html' %} 
+    <div class="container is-fluid">
         <header class="header">
             <h1 class="title is-2 has-text-primary">Solicitud de Transporte</h1>
             <p class="subtitle is-5 has-text-grey">
@@ -188,13 +189,15 @@
             <p>&copy; 2024 Solicitud de Busetas. Todos los derechos reservados.</p>
         </footer>
     </div>
+
 <script>
         document.addEventListener('DOMContentLoaded', () => {
           
             // Referencias globales de elementos dentro del ámbito DOMContentLoaded
             const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
             const $navbarMenu = document.getElementById('navbarBasicExample');
-            const themeToggle = document.getElementById('theme-toggle'); // 🎯 CORREGIDO: Declaración única y accesible
+            const navbarContainer = document.getElementById('app-navbar');
+            const themeToggle = document.getElementById('theme-toggle'); // Definido aquí para el punto 3
 
             // 1. Funcionalidad de notificaciones
             (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
@@ -204,7 +207,7 @@
                 });
             });
 
-            // 2. Funcionalidad del Menú Hamburguesa (Bulma) Y Colapso al Clic Exterior (CORREGIDO)
+            // 2. Funcionalidad del Menú Hamburguesa (Bulma) Y Colapso al Clic Exterior
             
             function toggleNavbar() {
                 const burger = $navbarBurgers[0];
@@ -219,15 +222,11 @@
             }
             
             document.addEventListener('click', (event) => {
+                // Solo ejecutar si el menú responsive está abierto
                 if ($navbarMenu.classList.contains('is-active')) {
-                    const isClickInsideMenu = $navbarMenu.contains(event.target);
-                    const isClickOnBurger = Array.from($navbarBurgers).some(burger => burger.contains(event.target));
                     
-                    // Aseguramos que el clic en el botón de tema NO cause el cierre
-                    const isClickOnThemeToggle = themeToggle.contains(event.target); 
-                    
-                    // Solo colapsar si el clic fue limpio (ni en el menú, ni en el burger, ni en el botón de tema)
-                    if (!isClickInsideMenu && !isClickOnBurger && !isClickOnThemeToggle) {
+                    // Si el clic NO fue dentro del contenedor del navbar (toda el área de la barra)
+                    if (!navbarContainer.contains(event.target)) {
                         toggleNavbar();
                     }
                 }
@@ -264,7 +263,12 @@
             let currentTheme = localStorage.getItem(THEME_KEY) || 'light';
             applyTheme(currentTheme);
             
-            themeToggle.addEventListener('click', () => {
+            // 🎯 CORRECCIÓN APLICADA AQUÍ: Detener la propagación del evento
+            themeToggle.addEventListener('click', (event) => {
+                // Previene que el evento de clic llegue al listener del documento,
+                // eliminando cualquier posible conflicto de doble manejo o cierre accidental.
+                event.stopPropagation(); 
+                
                 const currentIndex = themes.indexOf(currentTheme);
                 const nextIndex = (currentIndex + 1) % themes.length;
                 const nextTheme = themes[nextIndex];
