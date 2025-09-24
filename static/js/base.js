@@ -54,14 +54,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateToggleText(currentTheme) {
         let iconClass = 'fas fa-palette';
-        let text = 'Cambiar Tema';
+        let text = '';
         
         if (currentTheme === 'dark') {
             iconClass = 'fas fa-sun';
-            text = 'Tema Claro';
+            // text = 'Tema Claro';
         } else if (currentTheme === 'sepia') {
             iconClass = 'fas fa-moon';
-            text = 'Tema Oscuro';
+            // text = 'Tema Oscuro';
         }
         
         themeToggle.innerHTML = `<span class="icon"><i class="${iconClass}"></i></span><span>${text}</span>`;

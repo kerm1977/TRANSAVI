@@ -1,0 +1,18 @@
+/* Estilos responsivos para títulos y subtítulos */
+@media (max-width: 768px) {
+    /* Título principal en base.html */
+    .header .title.is-2 {
+        font-size: 1.5rem;
+    }
+
+    /* Subtítulo en base.html */
+    .header .subtitle.is-5 {
+        font-size: 1rem;
+    }
+
+    /* Títulos de sección en index.html */
+    .title.user-info-title,
+    .title.trip-info-title {
+        font-size: 1.25rem;
+    }
+}

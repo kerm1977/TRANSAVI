@@ -39,7 +39,7 @@
 
 /* El enlace será de color warning solo en modo claro */
 .is-theme-light .footer a {
-    color: #ff9900;
+    color: #ffb700;
 }
 
 /* El enlace será de color café oscuro en modo sepia */
