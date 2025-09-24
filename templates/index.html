@@ -36,17 +36,17 @@
                 </div>
             </div>
         </div>
-        <div class="column is-full">
+        <div class="column is-half-desktop is-full-tablet">
             <div class="field">
-                <label class="label" for="email">Correo Electrónico:</label>
+                <label class="label" for="email">Email:</label>
                 <div class="control">
                     <input class="input is-rounded" type="email" id="email" name="email" required>
                 </div>
             </div>
         </div>
     </div>
-
-    <h2 class="title is-4 has-text-info mt-5">Detalles de la Solicitud</h2>
+    
+    <h2 class="title is-4 has-text-info">Información del Recorrido</h2>
     <div class="columns is-multiline">
         <div class="column is-half-desktop is-full-tablet">
             <div class="field">
@@ -75,7 +75,8 @@
 
     <div class="field is-grouped is-grouped-centered mt-6">
         <div class="control">
-            <button type="submit" class="button is-primary is-large is-rounded">
+            <!-- Botón de enviar solicitud fijo -->
+            <button type="submit" class="button is-warning is-large is-rounded send-button-fixed">
                 <span class="icon">
                     <i class="fas fa-paper-plane"></i>
                 </span>
@@ -84,4 +85,5 @@
         </div>
     </div>
 </form>
+
 {% endblock %}

@@ -1,5 +1,8 @@
 @import url('all.min.css');
-/*@import url('base.css');*/
+@import url('base.css');
+@import url('bulma.css');
+@import url('index.css');
+@import url('footer.css');
 
 
 /*FUENTES*/

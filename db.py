@@ -1,6 +1,6 @@
 import sqlite3
 
-DATABASE_NAME = 'buses.db'
+DATABASE_NAME = 'db.db'
 
 def get_db_connection():
     """Establece y retorna una conexión a la base de datos SQLite."""

@@ -1,0 +1,37 @@
+/* Estilos para el botón flotante de la derecha */
+.back-button-float-right {
+    position: fixed !important;
+    bottom: 100px !important;
+    right: 20px !important;
+    z-index: 1000 !important;
+    border-radius: 50% !important;
+    height: 3.25rem !important;
+    width: 3.25rem !important;
+    padding: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+.back-button-float {
+        position: fixed !important;
+        bottom: 100px !important;
+        left: 20px !important;
+        z-index: 1000 !important;
+        border-radius: 50% !important;
+        height: 3.25rem !important;
+        width: 3.25rem !important;
+        padding: 0 !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+
+/* Estilos para el botón de enviar fijo */
+.send-button-fixed {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
