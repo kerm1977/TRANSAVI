@@ -1,4 +1,9 @@
 /* Estilos responsivos para títulos y subtítulos */
+
+.navbar-item {
+    background-color: inherit;
+}
+
 @media (max-width: 768px) {
     /* Título principal en base.html */
     .header .title.is-2 {
