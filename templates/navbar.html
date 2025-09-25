@@ -2,18 +2,17 @@
     <div class="navbar-brand">
         <a class="navbar-item" href="{{ url_for('index') }}">
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo de TRANSAVI C.R." class="is-rounded" style="max-height: 2.25rem;">
-            <span class="is-size-4 has-text-weight-bold has-text-white ml-2 is-hidden-mobile-314">TRANSAVI C.R.</span>
+            <span class="is-size-6 has-text-weight-bold has-text-white ml-2 is-hidden-mobile-314">TRANSAVI C.R.</span>
         </a>
 
- 
-        
+        <!-- Botón de hamburguesa para dispositivos móviles -->
         <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
         </a>
 
-               <!-- Botón de cambio de tema y botón de hamburguesa están ahora más juntos -->
+        <!-- Botón de cambio de tema -->
         <a class="navbar-item" href="#" id="theme-toggle-link">
             <span id="theme-toggle" class="icon">
                 <i class="fas fa-palette"></i>
@@ -23,16 +22,14 @@
     </div>
 
     <div id="navbarBasicExample" class="navbar-menu">
-        <div class="navbar-start">
+        <div class="navbar-end">
+            <!-- Los enlaces ahora están dentro de navbar-end para alinearlos a la derecha -->
             <a class="navbar-item" href="{{ url_for('index') }}">
                 Inicio
             </a>
-            </div>
-
-        <div class="navbar-end">
             <div class="navbar-item">
                 <div class="buttons">
-                    <!-- Botón de cambio de tema eliminado de aquí -->
+                    <!-- Botones adicionales, si los hubiera -->
                 </div>
             </div>
         </div>

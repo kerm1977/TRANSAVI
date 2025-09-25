@@ -265,6 +265,8 @@ body {
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
+        /* Opacidad para el botón de volver atrás */
+        opacity: 0.85; 
     }
 
 /* Estilos para el botón de enviar fijo */
@@ -277,33 +279,25 @@ body {
 }
 
 
-
-/* Estilos responsivos para títulos y subtítulos */
-
-.navbar-item {
-    background-color: inherit;
-}
-
-@media (max-width: 768px) {
-    /* Título principal en base.html */
-    .header .title.is-2 {
-        font-size: 1.5rem;
-    }
-
-    /* Subtítulo en base.html */
-    .header .subtitle.is-5 {
-        font-size: 1rem;
-    }
-
-    /* Títulos de sección en index.html */
-    .title.user-info-title,
-    .title.trip-info-title {
-        font-size: 1.25rem;
-    }
-}
 /* Media query para ocultar el texto en anchos de 314px o menos */
 @media (max-width: 314px) {
     .is-hidden-mobile-314 {
         display: none !important;
+    }
+}
+
+/* Nuevos estilos responsivos para títulos y subtítulos en 443px */
+@media (max-width: 443px) {
+    .header .title.is-2 {
+        font-size: clamp(1.25rem, 5vw, 2.5rem);
+    }
+
+    .header .subtitle.is-5 {
+        font-size: clamp(0.9rem, 3vw, 1.25rem);
+    }
+    
+    /* Nueva regla para los títulos del formulario */
+    .section-title {
+        font-size: clamp(1.1rem, 4vw, 1.5rem);
     }
 }
