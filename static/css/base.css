@@ -301,3 +301,9 @@ body {
         font-size: 1.25rem;
     }
 }
+/* Media query para ocultar el texto en anchos de 314px o menos */
+@media (max-width: 314px) {
+    .is-hidden-mobile-314 {
+        display: none !important;
+    }
+}
