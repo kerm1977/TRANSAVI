@@ -1,6 +1,6 @@
 .footer {
     width: 100%;
-    height: 25px; /* Altura de 25px */
+    /* Altura y line-height eliminados para permitir el ajuste automático */
     text-align: center;
     position: fixed; /* Lo fija en la posición */
     bottom: 0; /* Lo adhiere al borde inferior */
@@ -12,7 +12,9 @@
     /* Estilos de texto */
     color: #7a7a7a;
     font-size: 0.8em;
-    line-height: 25px; /* Centra el texto verticalmente */
+    padding: 1rem; /* Añadido padding para que no se pegue al borde */
+    white-space: normal; /* Permite saltos de línea */
+    word-break: break-word; /* Rompe palabras largas para que se ajusten */
 }
 
 /* Estilos de Bulma para el footer (ajustados) */
