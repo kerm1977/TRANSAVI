@@ -54,9 +54,10 @@ body {
 .container {
     max-width: 800px;
     padding: 2.5rem; /* Ajustado para Bulma */
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* Se eliminan el fondo, border-radius y la sombra para eliminar el efecto de card */
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
     margin: 2rem auto 0 auto; /* Centramos el contenedor de contenido */
     width: 90%;
     flex-grow: 1; 
@@ -90,7 +91,7 @@ body {
 
 /* --- TEMA CLARO (Por Defecto) --- */
 .is-theme-light {
-    background-color: #f0f2f5 !important;
+    background-color: #f8f9fa !important;
 }
 .is-theme-light .navbar { background-color: #ffb700 !important; }
 .is-theme-light .navbar-item, 
@@ -121,7 +122,7 @@ body {
 
 /* --- TEMA OSCURO --- */
 .is-theme-dark {
-    background-color: #363636 !important;
+    background-color: #4a4a4a !important;
     color: #f5f5f5;
 }
 .is-theme-dark .navbar { 
@@ -167,7 +168,7 @@ body {
 
 /* --- TEMA SEPIA --- */
 .is-theme-sepia {
-    background-color: #f7f3e8 !important;
+    background-color: #e9e4d9 !important;
     color: #5a4f42;
 }
 .is-theme-sepia .navbar { background-color: #a49688 !important; }
