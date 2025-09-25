@@ -1,0 +1,33 @@
+.responsive-title {
+font-size: 8vw !important;
+}
+
+.responsive-subtitle {
+font-size: 4vw !important;
+}
+
+.responsive-button {
+width: 80% !important;
+padding: 1rem !important;
+font-size: 4vw !important;
+white-space: normal !important;
+word-wrap: break-word !important;
+}
+
+@media (min-width: 768px) {
+.responsive-title {
+font-size: 2.5rem !important;
+}
+
+.responsive-subtitle {
+    font-size: 1.25rem !important;
+}
+
+.responsive-button {
+    width: auto !important;
+    padding: 1.5rem 3rem !important;
+    font-size: 1.5rem !important;
+    white-space: nowrap !important;
+}
+
+}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="has-text-centered" style="margin-top: 100px;">
+<h2 class="title is-2 responsive-title">¡Bienvenido a la página de inicio!</h2>
+<p class="subtitle is-5 has-text-grey responsive-subtitle">
+Esta es la vista predeterminada de tu aplicación.
+</p>
+<a href="{{ url_for('index') }}" class="button is-warning is-rounded mt-5 responsive-button">
+<span class="icon">
+<i class="fas fa-file-alt"></i>
+</span>
+<span>Ir al formulario de solicitud</span>
+</a>
+</div>
+{% endblock %}

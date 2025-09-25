@@ -8,9 +8,9 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)  # Clave secreta para mensajes flash
 
 @app.route('/')
-def index():
-    """Ruta para la página principal que muestra el formulario de solicitud."""
-    return render_template('index.html')
+def home():
+    """Ruta para la página de inicio."""
+    return render_template('home.html')
 
 @app.route('/solicitar', methods=['POST'])
 def solicitar_transporte():
@@ -59,6 +59,11 @@ def solicitar_transporte():
         conn.close()
 
     return redirect(url_for('index'))
+
+@app.route('/formulario')
+def index():
+    """Ruta para la página del formulario."""
+    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=3030)
