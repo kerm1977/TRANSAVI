@@ -81,6 +81,13 @@ body {
     font-size: 1.25rem;
 }
 
+/* Estilo base para los títulos de sección (tamaño de escritorio o superior) */
+.section-title {
+    font-size: 2rem; /* Tamaño de fuente más grande y uniforme para escritorio/tablet */
+    font-weight: bold;
+    margin-bottom: 1.5rem; /* Espaciado debajo del título */
+    margin-top: 1.5rem; /* Espaciado arriba del título */
+}
 
 /* ------------------------------------- */
 /* ESTILOS DE TEMAS DINÁMICOS (Movidos desde base.html) */
@@ -92,6 +99,7 @@ body {
 }
 .is-theme-light .navbar { background-color: #ffb700 !important; }
 .is-theme-light .navbar-item, 
+.is-theme-light .navbar-link, 
 .is-theme-light .navbar-brand a,
 .is-theme-light .navbar-menu .navbar-item { 
     color: black !important; 
@@ -114,6 +122,14 @@ body {
 /* Títulos y subtítulos del index en tema claro */
 .is-theme-light .section-title {
     color: black !important;
+}
+
+/* Estilos de Card (CON BORDE LEVE, SIN SOMBRA) para Tema Claro */
+.is-theme-light .form-card-container {
+    background-color: transparent; /* Fondo transparente */
+    box-shadow: none; /* Sin sombra */
+    /* Borde: 1px sólido color oscuro (Dark) */
+    border: 1px solid #343a40; 
 }
 
 
@@ -165,6 +181,14 @@ body {
 /* Nuevo: Título de la página de inicio en tema oscuro */
 .is-theme-dark .responsive-title {
     color: #ffb700 !important;
+}
+
+/* Estilos de Card (CON BORDE LEVE, SIN SOMBRA) para Tema Oscuro */
+.is-theme-dark .form-card-container {
+    background-color: transparent; /* Fondo transparente */
+    box-shadow: none; /* Sin sombra */
+    /* Borde: 1px sólido color warning (Amarillo) */
+    border: 1px solid #ffb700; 
 }
 
 
@@ -223,6 +247,53 @@ body {
     color: #5a4f42 !important;
 }
 
+/* Estilos de Card (CON BORDE LEVE, SIN SOMBRA) para Tema Sepia */
+.is-theme-sepia .form-card-container {
+    background-color: transparent; /* Fondo transparente */
+    box-shadow: none; /* Sin sombra */
+    /* Borde: 1px sólido color sepia (Café) */
+    border: 1px solid #5a4f42; 
+}
+
+
+/* Estilo general para la card del formulario */
+.form-card-container {
+    padding: 1.5rem;
+    border-radius: var(--border-radius); /* 8px por defecto */
+    margin-bottom: 2rem; /* Separación de la siguiente sección/elemento */
+    transition: all 0.3s ease;
+}
+
+/* ------------------------------------- */
+/* Contenedor para limitar y centrar el formulario */
+/* ------------------------------------- */
+
+.centered-form-wrapper {
+    /* Por defecto en móvil, toma el 100% del ancho del contenedor */
+    width: 95%; /* Pequeño margen para móvil */
+    margin: 0 auto;
+}
+
+/* Aplicar 50% de ancho y margen a partir de 768px (Tablet/Desktop) */
+@media (min-width: 768px) {
+    .centered-form-wrapper {
+        /* Centrado automático ya aplicado con margin: 0 auto; */
+        width: 50%;
+        /* Usamos un max-width para que el 50% no se haga demasiado grande en monitores ultra anchos */
+        max-width: 600px; 
+        margin: 0 auto; /* Centrar el contenedor principal */
+        /* Padding: 0 5%; se eliminó para que el 50% sea exacto dentro del contenedor general */
+    }
+}
+@media (min-width: 1024px) {
+    .centered-form-wrapper {
+        width: 50%;
+        max-width: 600px; /* Mantenemos el límite */
+        margin: 0 auto;
+        padding: 0; 
+    }
+}
+
 
 /* Footer y Notificaciones */
 .footer {
@@ -245,15 +316,7 @@ body {
     .header{
         margin-top: -10px !important;
     }
-
-    .section-title{
-        margin-top: -50px !important;
-    }
 }
-
-
-
-
 
 
 /* Estilos para el botón flotante de la derecha */
@@ -317,12 +380,14 @@ body {
         font-size: clamp(0.9rem, 3vw, 1.25rem);
     }
     
-    /* Nueva regla para los títulos del formulario */
+    /* Nueva regla para los títulos del formulario, usando clamp() para responsividad */
+    /* Mínimo 1.25rem, ideal 5vw, Máximo 2rem (el tamaño base) */
     .section-title {
-        font-size: clamp(1.1rem, 4vw, 1.5rem);
+        font-size: clamp(1.25rem, 5vw, 2rem) !important;
+        margin-bottom: 1rem !important; /* Ajuste para móvil */
+        margin-top: 1rem !important; /* Ajuste para móvil */
     }
 }
-
 
 
 @media (max-width: 410px) {

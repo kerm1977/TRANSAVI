@@ -2,90 +2,91 @@
 
 {% block content %}
 
-
-<form action="{{ url_for('solicitar_transporte') }}" method="post">
-    <h2 class="title has-text-centered section-title">Información del Usuario</h2>
-    <div class="columns is-multiline">
-        <div class="column is-half-desktop is-full-tablet">
+<!-- Nuevo contenedor para limitar el ancho del formulario en desktop/tablet y centrarlo -->
+<div class="centered-form-wrapper">
+    <form action="{{ url_for('solicitar_transporte') }}" method="post">
+        
+        <!-- Sección de Información del Usuario -->
+        <h2 class="title has-text-centered section-title">Información del Usuario</h2>
+        <div class="form-card-container">
+            
             <div class="field">
                 <label class="label" for="first_name">Nombre:</label>
                 <div class="control">
                     <input class="input is-rounded" type="text" id="first_name" name="first_name" required>
                 </div>
             </div>
-        </div>
-        <div class="column is-half-desktop is-full-tablet">
+            
             <div class="field">
                 <label class="label" for="first_lastname">Primer Apellido:</label>
                 <div class="control">
                     <input class="input is-rounded" type="text" id="first_lastname" name="first_lastname" required>
                 </div>
             </div>
-        </div>
-        <div class="column is-half-desktop is-full-tablet">
+            
             <div class="field">
                 <label class="label" for="second_lastname">Segundo Apellido:</label>
                 <div class="control">
                     <input class="input is-rounded" type="text" id="second_lastname" name="second_lastname" required>
                 </div>
             </div>
-        </div>
-        <div class="column is-half-desktop is-full-tablet">
+            
             <div class="field">
                 <label class="label" for="phone">Teléfono:</label>
                 <div class="control">
                     <input class="input is-rounded" type="tel" id="phone" name="phone" required>
                 </div>
             </div>
-        </div>
-        <div class="column is-half-desktop is-full-tablet">
+            
             <div class="field">
                 <label class="label" for="email">Email:</label>
                 <div class="control">
                     <input class="input is-rounded" type="email" id="email" name="email" required>
                 </div>
             </div>
+            
         </div>
-    </div>
-    
-    <h2 class="title has-text-centered section-title">Información del Recorrido</h2>
-    <div class="columns is-multiline">
-        <div class="column is-half-desktop is-full-tablet">
+        
+        <!-- Sección de Información del Recorrido -->
+        <h2 class=" has-text-centered section-title">Información del Recorrido</h2>
+        <div class="form-card-container">
+            
             <div class="field">
                 <label class="label" for="pickup_location">Lugar de Recogida:</label>
                 <div class="control">
                     <input class="input is-rounded" type="text" id="pickup_location" name="pickup_location" required>
                 </div>
             </div>
-        </div>
-        <div class="column is-half-desktop is-full-tablet">
+            
             <div class="field">
                 <label class="label" for="destination">Destino:</label>
                 <div class="control">
                     <input class="input is-rounded" type="text" id="destination" name="destination" required>
                 </div>
             </div>
+            
         </div>
-    </div>
-    
-    <div class="field">
-        <label class="label" for="notes">Notas Adicionales (opcional):</label>
-        <div class="control">
-            <textarea class="textarea is-rounded" id="notes" name="notes" rows="4"></textarea>
+        
+        <!-- Notas Adicionales -->
+        <div class="field">
+            <label class="label" for="notes">Notas Adicionales (opcional):</label>
+            <div class="control">
+                <textarea class="textarea is-rounded" id="notes" name="notes" rows="4"></textarea>
+            </div>
         </div>
-    </div>
 
-    <div class="field is-grouped is-grouped-centered mt-6">
-        <div class="control">
-            <!-- Botón de enviar solicitud fijo -->
-            <button type="submit" class="button is-warning is-large is-rounded mb-6">
-                <span class="icon">
-                    <i class="fas fa-paper-plane"></i>
-                </span>
-                <span>Enviar Solicitud</span>
-            </button>
+        <div class="field is-grouped is-grouped-centered mt-6">
+            <div class="control">
+                <!-- Botón de enviar solicitud fijo -->
+                <button type="submit" class="button is-warning is-large is-rounded mb-6">
+                    <span class="icon">
+                        <i class="fas fa-paper-plane"></i>
+                    </span>
+                    <span>Enviar Solicitud</span>
+                </button>
+            </div>
         </div>
-    </div>
-</form>
+    </form>
+</div>
 
 {% endblock %}
