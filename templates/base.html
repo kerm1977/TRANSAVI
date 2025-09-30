@@ -34,9 +34,7 @@
     </style>
 </head>
 <body class="is-theme-light">
-    
-    {% include 'navbar.html' %} 
-    <div class="main-content">
+   <div class="main-content">
         <div class="container is-fluid">
             <header class="header">
                 <h1 class="title is-2 has-text-warning">Solicitud de Transporte</h1>
@@ -47,24 +45,15 @@
                     </span>
                 </p>
             </header>
-
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="mb-5">
-                    {% for category, message in messages %}
-                        <div class="notification {% if category == 'success' %}is-success{% else %}is-danger{% endif %} is-light">
-                            <button class="delete"></button>
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            {% endwith %}
-
+    
+            {% include 'navbar.html' %} 
+            {% include 'flash.html' %}
             {% block content %}{% endblock %}
         </div>
     </div>
+
     {% include 'footer.html' %} 
+
 
     <!-- Botón flotante para volver atrás -->
     <a href="javascript:history.back()" class="button is-warning is-large is-rounded back-button-float">

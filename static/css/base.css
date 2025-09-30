@@ -34,7 +34,7 @@ body {
     flex-direction: column;
     align-items: stretch; /* Asegura que tome el ancho completo */
     justify-content: flex-start;
-    padding-top: 3.25rem; /* Padding para el contenido principal, compensando el navbar fijo */
+    padding-top: 2.25rem; /* Padding para el contenido principal, compensando el navbar fijo */
 }
 
 /* Estilo específico para el Navbar Fijo */
@@ -81,11 +81,6 @@ body {
     font-size: 1.25rem;
 }
 
-/* Estilos de los títulos y subtítulos del index */
-.section-title {
-    margin-top: 3rem;
-    margin-bottom: 1.5rem;
-}
 
 /* ------------------------------------- */
 /* ESTILOS DE TEMAS DINÁMICOS (Movidos desde base.html) */
@@ -246,7 +241,18 @@ body {
     .back-button-float-right {
         bottom: 60px !important;
     }
+
+    .header{
+        margin-top: -10px !important;
+    }
+
+    .section-title{
+        margin-top: -50px !important;
+    }
 }
+
+
+
 
 
 
@@ -295,7 +301,10 @@ body {
 @media (max-width: 314px) {
     .is-hidden-mobile-314 {
         display: none !important;
+
     }
+
+
 }
 
 /* Nuevos estilos responsivos para títulos y subtítulos en 443px */
@@ -311,5 +320,13 @@ body {
     /* Nueva regla para los títulos del formulario */
     .section-title {
         font-size: clamp(1.1rem, 4vw, 1.5rem);
+    }
+}
+
+
+
+@media (max-width: 410px) {
+    .back-button-float{
+        margin-bottom: 55px !important;
     }
 }

@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-<form action="{{ url_for('solicitar_transporte') }}" method="post" style="margin-top: 100px;">
+
+
+<form action="{{ url_for('solicitar_transporte') }}" method="post">
     <h2 class="title has-text-centered section-title">Información del Usuario</h2>
     <div class="columns is-multiline">
         <div class="column is-half-desktop is-full-tablet">
@@ -76,7 +78,7 @@
     <div class="field is-grouped is-grouped-centered mt-6">
         <div class="control">
             <!-- Botón de enviar solicitud fijo -->
-            <button type="submit" class="button is-warning is-large is-rounded">
+            <button type="submit" class="button is-warning is-large is-rounded mb-6">
                 <span class="icon">
                     <i class="fas fa-paper-plane"></i>
                 </span>
