@@ -3,21 +3,83 @@
 {% block head %}
 {{ super() }}
 
+<!-- Aquí se asume que home.css contiene estilos específicos, si es necesario -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 {% endblock %}
 
 {% block content %}
 
-<div class="has-text-centered" style="margin-top: 100px;">
-<h2 class="title is-2 responsive-title">¡Bienvenido a la página de inicio!</h2>
-<p class="subtitle is-5 has-text-grey responsive-subtitle">
-Esta es la vista predeterminada de tu aplicación.
-</p>
-<a href="{{ url_for('index') }}" class="button is-warning is-rounded mt-5 responsive-button">
-<span class="icon">
-<i class="fas fa-file-alt"></i>
-</span>
-<span>Ir al formulario de solicitud</span>
-</a>
+<!-- Contenedor principal para centrar el contenido y limitar el ancho -->
+<div class="centered-form-wrapper" style="margin-top: 2rem;">
+    
+    <!-- Componente Tabs de Bulma - Centrado -->
+    <div class="tabs is-centered is-large">
+        <ul>
+            <!-- Pestaña 1: Grupos (Activa por defecto) -->
+            <li class="is-active" data-tab-target="#tab-groups">
+                <a>Grupos</a>
+            </li>
+            <!-- Pestaña 2: Empresas -->
+            <li data-tab-target="#tab-companies">
+                <a>Empresas</a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Contenido de las Pestañas -->
+    
+    <!-- Contenido de Grupos -->
+    <div id="tab-groups" class="tab-content is-active">
+        <div class="has-text-centered p-4">
+            <h2 class="title is-2 responsive-title">¡Bienvenido a TRANSAVI!</h2>
+            <p class="subtitle is-5 has-text-grey responsive-subtitle">
+                Esta es la vista para solicitudes de **Grupos**.
+            </p>
+            <a href="{{ url_for('index') }}" class="button is-warning is-rounded mt-5 responsive-button">
+                <span class="icon">
+                    <i class="fas fa-file-alt"></i>
+                </span>
+                <span>Ir al formulario de solicitud</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Contenido de Empresas -->
+    <div id="tab-companies" class="tab-content">
+        <div class="has-text-centered p-4">
+            <h2 class="title is-2 responsive-title">Servicios para Empresas</h2>
+            <p class="subtitle is-5 has-text-grey responsive-subtitle">
+                Aquí se mostrará la información o el formulario específico para **Empresas**.
+                (Contenido aún por definir)
+            </p>
+        </div>
+    </div>
+    
 </div>
+
+<script>
+    // JavaScript para manejar el cambio de pestañas
+    document.addEventListener('DOMContentLoaded', () => {
+        const tabs = document.querySelectorAll('.tabs li');
+        const tabContentBoxes = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 1. Desactivar todas las pestañas y ocultar todos los contenidos
+                tabs.forEach(item => item.classList.remove('is-active'));
+                tabContentBoxes.forEach(box => box.classList.remove('is-active'));
+
+                // 2. Activar la pestaña clickeada
+                tab.classList.add('is-active');
+
+                // 3. Mostrar el contenido objetivo
+                const target = document.querySelector(tab.dataset.tabTarget);
+                if (target) {
+                    target.classList.add('is-active');
+                }
+            });
+        });
+    });
+</script>
+
 {% endblock %}
