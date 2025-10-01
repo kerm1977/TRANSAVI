@@ -1,33 +1,292 @@
-.responsive-title {
-font-size: 8vw !important;
+/* ------------------------------------- */
+/* ESTILOS DE PESTAÑAS (TABS) - ESPECÍFICO DE HOME */
+/* ------------------------------------- */
+
+/* === CORRECCIÓN DE SUPERPOSICIÓN DE TÍTULO === */
+/* El título se veía dañado en PC porque se le aplicaba un width muy estrecho. 
+   Aseguramos que fluya sin interrupciones forzadas y centrado. */
+
+.hero-body h1.title,
+.hero-body h2.title {
+    /* Permitir que el título ocupe el ancho necesario sin forzar cortes. */
+    text-align: center !important;
+    line-height: 1.2; /* Interlineado limpio */
+    margin-bottom: 1.5rem !important; /* Espacio debajo del título */
+    white-space: normal !important; /* Por defecto, permitir salto de línea normal */
 }
 
-.responsive-subtitle {
-font-size: 4vw !important;
-}
-
-.responsive-button {
-width: 80% !important;
-padding: 1rem !important;
-font-size: 4vw !important;
-white-space: normal !important;
-word-wrap: break-word !important;
-}
-
+/* REGLA CRÍTICA MODIFICADA: Forzar el título a una sola línea (no-wrap) A PARTIR DE 768px */
 @media (min-width: 768px) {
-.responsive-title {
-font-size: 2.5rem !important;
+    .hero-body h1.title,
+    .hero-body h2.title {
+        /* ESTO FUERZA LA VISUALIZACIÓN HORIZONTAL SIN SALTO DE LÍNEA */
+        white-space: nowrap !important; 
+    }
 }
 
-.responsive-subtitle {
+/* Si el subtítulo es el que se está superponiendo (el texto más pequeño), 
+   podemos darle margen superior si el problema es en la estructura de la plantilla base. */
+.hero-body .subtitle {
+    /* Aseguramos que el subtítulo tenga suficiente margen superior para no superponerse */
+    margin-top: 1.5em !important; 
+    line-height: 1.4; /* Mejora la legibilidad del subtítulo si está envuelto */
+}
+
+
+.pestañas{
+    font-size: 20px;
+}
+
+/* ------------------------------------- */
+/* Resto de estilos originales... */
+/* ------------------------------------- */
+
+/* Ocultar contenido de pestañas por defecto si no tienen la clase is-active */
+.tab-content {
+    display: none;
+    padding-top: 2rem;
+
+}
+
+/* === FIX GLOBAL DE DESBORDAMIENTO (Overflow Horizontal) === */
+.tabs {
+    overflow-x: hidden !important; /* Evita que aparezca la barra horizontal */
+}
+
+/* ------------------------------------- */
+/* ESTILOS DE PESTAÑAS HORIZONTALES (Desktop/Tablet > 768px) */
+/* ------------------------------------- */
+
+.tabs.is-large li a {
+    /* Se permite envolver el texto de las pestañas */
+    font-size: 1.5rem; 
+    text-decoration: none !important;
+    white-space: normal !important; 
+    padding-left: 0.75em;
+    padding-right: 0.75em;
+    text-align: center; 
+    transition: all 0.2s ease-in-out;
+}
+
+/* Sobrescribir para pestañas inactivas (lo hace más pequeño) */
+.tabs.is-large li:not(.is-active) a {
     font-size: 1.25rem !important;
 }
 
-.responsive-button {
-    width: auto !important;
-    padding: 1.5rem 3rem !important;
-    font-size: 1.5rem !important;
-    white-space: nowrap !important;
+/* Mostrar contenido cuando está activo */
+.tab-content.is-active {
+    display: block;
 }
 
+/* Estilo de fuente adicional para elementos pequeños */
+.tabs.is-large li a {
+    font-size: 1.25rem;
+    text-decoration: none !important;
+    white-space: normal !important; 
+    padding-left: 0.75em;
+    padding-right: 0.75em;
+    text-align: center;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Sobrescribir para pestañas inactivas (lo hace más pequeño) */
+.tabs.is-large li:not(.is-active) a {
+    font-size: 1rem !important;
+}
+
+/* ------------------------------------- */
+/* REGLA DE SALTO DE LÍNEA CONDICIONAL PARA PESTAÑA 2 */
+/* ------------------------------------- */
+
+/* 1. Ocultar el salto de línea por defecto (en pantallas grandes > 1112px) */
+.br-responsive {
+    display: none;
+}
+
+/* 2. Mostrar el salto de línea cuando el ancho sea 1112px o menos */
+@media (max-width: 1112px) {
+    .br-responsive {
+        /* Forzamos el salto de línea */
+        display: block !important;
+        width: 0;
+        height: 0;
+    }
+    
+    /* Ajustamos el tamaño de fuente para el rango 768px < ancho < 1112px */
+    .tabs.is-large li a {
+        font-size: 1.15rem !important; 
+    }
+    .tabs.is-large li:not(.is-active) a {
+        font-size: 1.0rem !important; 
+    }
+}
+
+/* ------------------------------------- */
+/* SEPARADOR VERTICAL (PC y Tablet) */
+/* Punto de quiebre estándar para Tablet/Desktop: 768px */
+/* ------------------------------------- */
+
+@media (min-width: 768px) { /* <- REVERTIMOS a punto de quiebre estándar de Bulma */
+    .tabs li:not(:last-child):not(.is-active) {
+        border-right: 1px solid #ccc; /* Separador gris claro */
+    }
+    
+    /* Reajustamos el tamaño de fuente para el rango PC/Tablet (768px y más) */
+    .tabs.is-large li a {
+        font-size: 1.3rem;
+    }
+    .tabs.is-large li:not(.is-active) a {
+        font-size: 1.15rem !important;
+    }
+}
+
+
+/* ------------------------------------- */
+/* RESPONSIVIDAD DE PESTAÑAS EN MÓVIL (PUNTO DE QUIEBRE ESTÁNDAR 767px) */
+/* ------------------------------------- */
+
+/* Regla específica para móvil (max-width: 767px): Forzar el apilamiento de pestañas */
+@media (max-width: 767px) { /* <- REVERTIMOS a punto de quiebre estándar de Bulma */
+    /* Desactivar Flexbox centrado de Bulma en el contenedor UL para permitir el apilamiento */
+    .tabs.is-centered ul {
+        justify-content: flex-start !important; /* Quitar el centrado */
+        flex-wrap: wrap !important; /* Asegurar el envoltorio */
+        width: 100%;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+
+    }
+
+    .tabs li {
+        /* Fuerza a cada elemento de lista a ocupar el 100% del ancho */
+        width: 100% !important;
+        margin-bottom: 0.5rem; /* Espacio entre pestañas apiladas */
+
+        /* Aseguramos que la pestaña inactiva se vea como un bloque */
+        border-bottom: none !important;
+    }
+
+    /* Asegurar que el ancla ocupe todo el espacio y centre el texto */
+    .tabs li a {
+        display: block;
+        width: 100%;
+        padding-top: 0.5em;
+        padding-bottom: 0.5em;
+        border-radius: 4px; /* Añade un poco de estilo a la caja apilada */
+        /* Aseguramos que el texto se envuelva completamente */
+        white-space: normal !important;
+        line-height: 1.2; /* Mejora la legibilidad del texto envuelto */
+        
+        /* FIX: Asegurar que el enlace esté por encima de cualquier otra cosa en móvil */
+        position: relative;
+        z-index: 10;
+        
+        /* Ajuste de fuente para vista móvil/tablet pequeña */
+        font-size: 1.25rem !important;
+    }
+    
+    /* Pestañas inactivas en la vista móvil */
+    .tabs li:not(.is-active) a {
+        font-size: 1rem !important;
+    }
+    
+    /* Ocultar el salto de línea, ya que en la vista apilada no es necesario */
+    .br-responsive {
+        display: none !important;
+    }
+    
+    /* HOVER EN MÓVIL (Aplicamos un estilo de fondo simple para el tap/hover) */
+    .tabs li a:hover {
+        background-color: rgba(0, 0, 0, 0.05); /* Un gris muy ligero para el toque */
+    }
+
+
+    /* Ocultar la línea divisoria inferior de Bulma en móvil cuando las pestañas se apilan */
+    .tabs ul {
+        border-bottom: none !important;
+    }
+}
+
+
+/* ------------------------------------- */
+/* ESTILOS DE TEMAS PARA PESTAÑAS (NO MODIFICADOS) */
+/* ------------------------------------- */
+
+/* Regla general para la línea de la pestaña base */
+.tabs ul {
+    border-bottom: none !important; /* ELIMINAR LA FRANJA INFERIOR */
+}
+
+/* Regla para que el hover en pestañas inactivas sea el mismo que el color de texto inactivo */
+.tabs li:not(.is-active) a:hover {
+    border-bottom-color: #ccc !important;
+}
+
+/* --- TEMA CLARO (Light) --- */
+
+/* Pestañas inactivas en tema claro (gris claro y fuente más pequeña) */
+.is-theme-light .tabs li:not(.is-active) a {
+    color: #ccc !important; /* Gris claro para inactivas */
+    /* Usamos el tamaño definido en media query para tablet/desktop, o 1rem en móvil. */
+}
+
+/* HOVER TEMA CLARO */
+.is-theme-light .tabs li:not(.is-active) a:hover {
+    color: #888 !important; /* Color de texto un poco más oscuro */
+    background-color: #f0f0f0; /* Fondo gris muy suave */
+}
+
+/* Pestañas activas en tema claro (color oscuro, borde naranja) */
+.is-theme-light .tabs li.is-active a {
+    color: black !important; /* Texto de la pestaña activa más oscuro */
+    border-bottom-color: #ffb700 !important; /* Borde naranja (warning) */
+    /* Usamos el tamaño definido en media query para tablet/desktop, o 1.25rem en móvil. */
+}
+
+
+/* --- TEMA OSCURO (Dark) --- */
+
+/* Pestañas inactivas en tema oscuro (gris claro, borde gris oscuro) */
+.is-theme-dark .tabs li:not(.is-active) a {
+    color: #ccc !important; /* Gris claro para inactivas */
+    /* Usamos el tamaño definido en media query para tablet/desktop, o 1rem en móvil. */
+    border-bottom-color: #666 !important; /* Borde gris oscuro para integrar */
+}
+
+/* HOVER TEMA OSCURO */
+.is-theme-dark .tabs li:not(.is-active) a:hover {
+    color: #fff !important; /* Texto blanco para destacar */
+    background-color: #444; /* Fondo gris oscuro */
+}
+
+
+/* Pestañas activas en tema oscuro (color amarillo, borde amarillo) */
+.is-theme-dark .tabs li.is-active a {
+    color: #ffb700 !important; /* Texto de la pestaña activa amarillo (warning) */
+    border-bottom-color: #ffb700 !important; /* Borde amarillo */
+    /* Usamos el tamaño definido en media query para tablet/desktop, o 1.25rem en móvil. */
+}
+
+
+/* --- TEMA SEPIA (Sepia) */
+
+/* Pestañas inactivas en tema sepia (gris claro, borde de color de navbar) */
+.is-theme-sepia .tabs li:not(.is-active) a {
+    color: #ccc !important; /* Gris claro para inactivas */
+    /* Usamos el tamaño definido en media query para tablet/desktop, o 1rem en móvil. */
+    border-bottom-color: #a49688 !important; /* Borde del color de la navbar */
+}
+
+/* HOVER TEMA SEPIA */
+.is-theme-sepia .tabs li:not(.is-active) a:hover {
+    color: #5a4f42 !important; /* Color café más oscuro */
+    background-color: #e0d5c8; /* Fondo sepia claro */
+}
+
+
+/* Pestañas activas en tema sepia (color café, borde café) */
+.is-theme-sepia .tabs li.is-active a {
+    color: #5a4f42 !important; /* Texto de la pestaña activa café */
+    border-bottom-color: #5a4f42 !important; /* Borde café */
+    /* Usamos el tamaño definido en media query para tablet/desktop, o 1.25rem en móvil. */
 }

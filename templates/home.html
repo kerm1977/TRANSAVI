@@ -1,55 +1,40 @@
 {% extends "base.html" %}
-
-{% block head %}
-{{ super() }}
-
-<!-- Aquí se asume que home.css contiene estilos específicos, si es necesario -->
-<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
-{% endblock %}
-
 {% block content %}
 
 <!-- Contenedor principal para centrar el contenido y limitar el ancho -->
-<div class="centered-form-wrapper" style="margin-top: 2rem;">
+<div class="centered-form-wrapper">
     
     <!-- Componente Tabs de Bulma - Centrado -->
+    <h2 class="has-text-centered mb-4">Selecciona una pestaña</h2>
+    <hr>
     <div class="tabs is-centered is-large">
         <ul>
-            <!-- Pestaña 1: Grupos (Activa por defecto) -->
-            <li class="is-active" data-tab-target="#tab-groups">
-                <a>Grupos</a>
+            <!-- Pestaña 1: Grupos (Enlace directo al formulario) -->
+
+            <li>
+                <a href="{{ url_for('index') }}"> <span class="pestañas">SERVICIOS ESPECIALES</span></a>
             </li>
-            <!-- Pestaña 2: Empresas -->
+            <!-- Pestaña 2: Instituciones y Empresas (Muestra contenido de tab) -->
             <li data-tab-target="#tab-companies">
-                <a>Empresas</a>
+                <a>
+                    <span class="pestañas">
+                        TRANSPORTE DE<span class="br-responsive"></span> ESTUDIANTES
+                    </span>
+                </a>
             </li>
         </ul>
     </div>
 
     <!-- Contenido de las Pestañas -->
     
-    <!-- Contenido de Grupos -->
-    <div id="tab-groups" class="tab-content is-active">
-        <div class="has-text-centered p-4">
-            <h2 class="title is-2 responsive-title">¡Bienvenido a TRANSAVI!</h2>
-            <p class="subtitle is-5 has-text-grey responsive-subtitle">
-                Esta es la vista para solicitudes de **Grupos**.
-            </p>
-            <a href="{{ url_for('index') }}" class="button is-warning is-rounded mt-5 responsive-button">
-                <span class="icon">
-                    <i class="fas fa-file-alt"></i>
-                </span>
-                <span>Ir al formulario de solicitud</span>
-            </a>
-        </div>
-    </div>
-
-    <!-- Contenido de Empresas -->
+    <!-- Contenido de Grupos: ELIMINADO ya que es un enlace. -->
+    
+    <!-- Contenido de Instituciones y Empresas -->
     <div id="tab-companies" class="tab-content">
         <div class="has-text-centered p-4">
-            <h2 class="title is-2 responsive-title">Servicios para Empresas</h2>
+            <h2 class="title is-4 responsive-title">Servicios para Instituciones y Empresas</h2>
             <p class="subtitle is-5 has-text-grey responsive-subtitle">
-                Aquí se mostrará la información o el formulario específico para **Empresas**.
+                Aquí se mostrará la información o el formulario específico para **Instituciones y Empresas**.
                 (Contenido aún por definir)
             </p>
         </div>
@@ -57,29 +42,6 @@
     
 </div>
 
-<script>
-    // JavaScript para manejar el cambio de pestañas
-    document.addEventListener('DOMContentLoaded', () => {
-        const tabs = document.querySelectorAll('.tabs li');
-        const tabContentBoxes = document.querySelectorAll('.tab-content');
 
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                // 1. Desactivar todas las pestañas y ocultar todos los contenidos
-                tabs.forEach(item => item.classList.remove('is-active'));
-                tabContentBoxes.forEach(box => box.classList.remove('is-active'));
-
-                // 2. Activar la pestaña clickeada
-                tab.classList.add('is-active');
-
-                // 3. Mostrar el contenido objetivo
-                const target = document.querySelector(tab.dataset.tabTarget);
-                if (target) {
-                    target.classList.add('is-active');
-                }
-            });
-        });
-    });
-</script>
-
+<script src="{{ url_for('static', filename='js/base.js') }}"></script> 
 {% endblock %}

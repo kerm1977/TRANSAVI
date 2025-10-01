@@ -4,7 +4,17 @@
 
 <!-- Nuevo contenedor para limitar el ancho del formulario en desktop/tablet y centrarlo -->
 <div class="centered-form-wrapper">
-    <form action="{{ url_for('solicitar_transporte') }}" method="post">
+<p class="subtitle is-5 has-text-grey">
+    Por favor, completa el formulario para solicitar una buseta. Seleccione Grupos y completa el formulario o  (Instituciones y Empresas) para recibir ínformcación acerca de su solicitud.
+    <span class="icon is-medium">
+        <i class="fas fa-bus"></i>
+    </span>
+</p>
+
+
+
+
+    <form action="{{ url_for('solicitar_transporte') }}" method="post">       
         
         <!-- Sección de Información del Usuario -->
         <h2 class="title has-text-centered section-title">Información del Usuario</h2>

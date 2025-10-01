@@ -18,7 +18,7 @@
 }
 
 /* ------------------------------------- */
-/* AJUSTES DE LAYOUT PARA NAVBAR FIJO (Combinación de base.css y base.html) */
+/* AJUSTES DE LAYOUT PARA NAVBAR FIJO */
 /* ------------------------------------- */
 
 html, body {
@@ -27,6 +27,8 @@ html, body {
     /* Los colores de fondo se definirán por las clases de tema */
     margin: 0;
     padding: 0;
+    /* FIX: Prevenir desplazamiento horizontal global causado por desbordamiento */
+    overflow-x: hidden; 
 }
 
 body {
@@ -79,15 +81,100 @@ body {
 
 .header .subtitle {
     font-size: 1.25rem;
+    /* Aumentamos la separación del título en la plantilla base */
+    margin-top: 1.5rem; 
 }
 
-/* Estilo base para los títulos de sección (tamaño de escritorio o superior) */
-.section-title {
-    font-size: 2rem; /* Tamaño de fuente más grande y uniforme para escritorio/tablet */
-    font-weight: bold;
-    margin-bottom: 1.5rem; /* Espaciado debajo del título */
-    margin-top: 1.5rem; /* Espaciado arriba del título */
+
+.title_index{
+    font-size: 2.5rem;
 }
+
+
+/* ------------------------------------- */
+/* ESTILOS DE TÍTULOS Y RESPONSIVIDAD (GLOBALES) */
+/* ------------------------------------- */
+
+/* Media query para ocultar el texto en anchos de 314px o menos */
+@media (max-width: 314px) {
+    .is-hidden-mobile-314 {
+        display: none !important;
+
+    }
+}
+
+/* Nuevos estilos responsivos para títulos en móvil pequeño */
+@media (max-width: 443px) {
+    .header .title.is-2 {
+        font-size: clamp(1.25rem, 5vw, 2.5rem);
+    }
+
+    .header .subtitle.is-5 {
+        font-size: clamp(0.9rem, 3vw, 1.25rem);
+    }
+}
+
+
+
+/* Título principal: <h1 class="title is-2 has-text-warning">Solicitud de Transporte</h1> */
+@media (max-width: 767px) {
+    .header .title {
+        /* FUERZA LA VISUALIZACIÓN EN UNA SOLA LÍNEA EN MÓVILES */
+        white-space: nowrap !important;
+        /* Esto puede causar desbordamiento, pero es lo que se solicitó */
+        font-size: 1.75rem !important; /* Opcional: reducir un poco el tamaño para móviles */
+        overflow: hidden; /* Oculta si se desborda, aunque es mejor dejar scroll horizontal */
+        text-overflow: ellipsis; /* Añade puntos suspensivos si se recorta (si se usa overflow: hidden) */
+    }
+
+
+/*ESTE ES EL MARGEN QUE VA DESDE EL NAVBAR HASTA EL TITULO SOLICITUD DE TRANSPORTE*/
+    .title_index{
+        font-size: 2rem;
+        margin-top: -50px;
+    }
+}
+
+
+
+/* REGLA DE SALTO DE LÍNEA: Aplicar max-width solo si el contenedor lo permite */
+@media (min-width: 1106px) {
+    
+    /* Si el título está en el header (contenido principal) */
+    .header .title {
+        /* Reducimos el ancho para forzar el salto de línea de "Estudiantes" */
+        max-width: 200px; 
+        margin-left: auto;
+        margin-right: auto;
+        white-space: normal; /* Asegurar el ajuste */
+        line-height: 1.1;
+    }
+
+    /* FIX: Asegurar que el navbar brand (donde va el título) permita el wrap */
+    .navbar-brand {
+        flex-shrink: 1; 
+        min-width: 0;
+    }
+
+    /* Si el título está en el navbar (ej. Bulma navbar-brand) */
+    .navbar-brand a.navbar-item .title {
+        /* Aplicamos un ancho aún más pequeño para el navbar y centramos */
+        max-width: 110px; /* Reducción a 110px */
+        text-align: center;
+        white-space: normal;
+        line-height: 1.1; 
+        margin: 0 auto; /* Centrar el título dentro de su contenedor (el 'a.navbar-item') */
+    }
+    
+    /* Para evitar que el título largo del navbar empuje las pestañas */
+    /* Nos aseguramos de que el contenedor de las pestañas (navbar-start/end) tenga espacio */
+    .navbar-menu .navbar-start,
+    .navbar-menu .navbar-end {
+        flex-shrink: 1; /* Permitir que se reduzcan si es necesario */
+        min-width: 0; /* Evitar que el flexbox mantenga un ancho mínimo excesivo */
+    }
+}
+
 
 /* ------------------------------------- */
 /* ESTILOS DE TEMAS DINÁMICOS */
@@ -104,7 +191,6 @@ body {
 .is-theme-light .navbar-menu .navbar-item { 
     color: black !important; 
 }
-/* Nuevo: El fondo de los enlaces del navbar coincide con el navbar en el tema claro */
 .is-theme-light a.navbar-item,
 .is-theme-light .navbar-link,
 .is-theme-light .navbar-menu {
@@ -119,17 +205,15 @@ body {
     border-color: transparent !important;
     color: white !important;
 }
-/* Títulos y subtítulos del index en tema claro */
 .is-theme-light .section-title {
     color: black !important;
 }
 
-/* Estilos de Card (CON BORDE LEVE, SIN SOMBRA) para Tema Claro - PC/TABLET */
-.is-theme-light .form-card-container {
-    /* Borde: 1px sólido color oscuro (Dark) */
-    border: 1px solid #343a40; 
-    background-color: transparent;
-    box-shadow: none;
+/* Borde de Card en tema claro: color oscuro (dark) - APLICADO SÓLO SI EL CONTENEDOR ESTÁ PRESENTE */
+@media (min-width: 768px) {
+    .is-theme-light .form-card-container {
+        border: 1px solid #343a40; 
+    }
 }
 
 
@@ -151,14 +235,12 @@ body {
 .is-theme-dark .navbar-menu.is-active {
     background-color: #555 !important;
 }
-/* Nuevo: El fondo de los enlaces del navbar coincide con el navbar en el tema oscuro */
 .is-theme-dark a.navbar-item,
 .is-theme-dark .navbar-link,
 .is-theme-dark .navbar-menu {
     background-color: transparent !important;
 }
 .is-theme-dark .container {
-    /* Fondo, color y sombra eliminados para el efecto de card */
     background: transparent;
     color: #f5f5f5;
     box-shadow: none;
@@ -174,21 +256,18 @@ body {
 .is-theme-dark .button.is-primary { background-color: #3273dc; border-color: transparent; }
 .is-theme-dark .title.has-text-primary, .is-theme-dark .title.has-text-info { color: #f5f5f5 !important; }
 .is-theme-dark .has-text-grey { color: #ccc !important; }
-/* Títulos y subtítulos del index en tema oscuro */
 .is-theme-dark .section-title {
     color: #ffb700 !important;
 }
-/* Nuevo: Título de la página de inicio en tema oscuro */
 .is-theme-dark .responsive-title {
     color: #ffb700 !important;
 }
 
-/* Estilos de Card (CON BORDE LEVE, SIN SOMBRA) para Tema Oscuro - PC/TABLET */
-.is-theme-dark .form-card-container {
-    /* Borde: 1px sólido color warning (Amarillo) */
-    border: 1px solid #ffb700; 
-    background-color: transparent;
-    box-shadow: none;
+/* Borde de Card en tema oscuro: color warning (amarillo) - APLICADO SÓLO SI EL CONTENEDOR ESTÁ PRESENTE */
+@media (min-width: 768px) {
+    .is-theme-dark .form-card-container {
+        border: 1px solid #ffb700; 
+    }
 }
 
 
@@ -206,14 +285,12 @@ body {
 }
 .is-theme-sepia .navbar-brand a .has-text-white { color: #3d342c !important; }
 .is-theme-sepia .navbar-burger span { background-color: #3d342c; }
-/* Nuevo: El fondo de los enlaces del navbar coincide con el navbar en el tema sepia */
 .is-theme-sepia a.navbar-item,
 .is-theme-sepia .navbar-link,
 .is-theme-sepia .navbar-menu {
     background-color: transparent !important;
 }
 .is-theme-sepia .container {
-    /* Fondo, color y sombra eliminados para el efecto de card */
     background: transparent;
     color: #5a4f42;
     box-shadow: none;
@@ -242,62 +319,21 @@ body {
     border-color: transparent !important;
     color: white !important;
 }
-/* Títulos y subtítulos del index en tema sepia */
 .is-theme-sepia .section-title {
     color: #5a4f42 !important;
 }
 
-/* Estilos de Card (CON BORDE LEVE, SIN SOMBRA) para Tema Sepia - PC/TABLET */
-.is-theme-sepia .form-card-container {
-    /* Borde: 1px sólido color sepia (Café) */
-    border: 1px solid #5a4f42; 
-    background-color: transparent;
-    box-shadow: none;
-}
-
-
-/* Estilo general para la card del formulario */
-.form-card-container {
-    padding: 1.5rem;
-    border-radius: var(--border-radius); /* 8px por defecto */
-    margin-bottom: 2rem; /* Separación de la siguiente sección/elemento */
-    transition: all 0.3s ease;
-}
-
-/* ------------------------------------- */
-/* Contenedor para limitar y centrar el formulario */
-/* ------------------------------------- */
-
-.centered-form-wrapper {
-    /* Por defecto en móvil (ancho máximo 767px), toma el 96% del ancho para un margen lateral */
-    width: 96%; 
-    margin: 0 auto;
-}
-
-/* Aplicar 50% de ancho y margen a partir de 768px (Tablet/Desktop) */
+/* Borde de Card en tema sepia: color café - APLICADO SÓLO SI EL CONTENEDOR ESTÁ PRESENTE */
 @media (min-width: 768px) {
-    .centered-form-wrapper {
-        width: 50%;
-        max-width: 600px; 
-        margin: 0 auto; /* Centrar el contenedor principal */
-    }
-
-    /* Reglas para mantener el borde de la Card SÓLO en PC/Tablet */
-    .form-card-container {
-        border-radius: var(--border-radius);
-        padding: 1.5rem;
+    .is-theme-sepia .form-card-container {
+        border: 1px solid #5a4f42; 
     }
 }
 
-
-/* --- Media Query para Móviles: Eliminar Bordes y Padding de Card --- */
-@media (max-width: 767px) {
-    .form-card-container {
-        /* Eliminar el borde y el relleno para que los inputs se extiendan */
-        border: none !important;
-        padding: 0 0.5rem !important; /* Mantenemos un padding horizontal mínimo */
-        border-radius: 0 !important;
-    }
+/* Estilo general para la card del formulario (se mantiene la base para temas) */
+.form-card-container {
+    /* Mantenemos solo estilos de transición, el resto se movió a index.css o tema */
+    transition: all 0.3s ease;
 }
 
 
@@ -313,293 +349,12 @@ body {
     word-break: break-word;
 }
 
-/* Para el botón de volver atrás en dispositivos móviles */
+/* === CORRECCIÓN DE SUPERPOSICIÓN DE TÍTULO (EDITADO) === */
+/* Se asegura un margen superior positivo de 1.5rem para el header en móvil */
 @media (max-width: 768px) {
-    .back-button-float-right {
-        bottom: 60px !important;
-    }
-
     .header{
-        margin-top: -10px !important;
+        margin-top: 1.5rem !important;
+        margin-bottom: 1.5rem !important; /* También aumentamos el margen inferior en móvil */
     }
 }
-
-
-/* Estilos para el botón flotante de la derecha */
-.back-button-float-right {
-    position: fixed !important;
-    bottom: 100px !important;
-    right: 20px !important;
-    z-index: 1000 !important;
-    border-radius: 50% !important;
-    height: 3.25rem !important;
-    width: 3.25rem !important;
-    padding: 0 !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-}
-
-.back-button-float {
-        position: fixed !important;
-        bottom: 100px !important;
-        left: 20px !important;
-        z-index: 1000 !important;
-        border-radius: 50% !important;
-        height: 3.25rem !important;
-        width: 3.25rem !important;
-        padding: 0 !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        /* Opacidad para el botón de volver atrás */
-        opacity: 0.85; 
-    }
-
-/* Estilos para el botón de enviar fijo */
-.send-button-fixed {
-    position: fixed;
-    bottom: 100px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-}
-
-
-/* Media query para ocultar el texto en anchos de 314px o menos */
-@media (max-width: 314px) {
-    .is-hidden-mobile-314 {
-        display: none !important;
-
-    }
-
-
-}
-
-/* Nuevos estilos responsivos para títulos y subtítulos en 443px */
-@media (max-width: 443px) {
-    .header .title.is-2 {
-        font-size: clamp(1.25rem, 5vw, 2.5rem);
-    }
-
-    .header .subtitle.is-5 {
-        font-size: clamp(0.9rem, 3vw, 1.25rem);
-    }
-    
-    /* Nueva regla para los títulos del formulario, usando clamp() para responsividad */
-    /* Mínimo 1.25rem, ideal 5vw, Máximo 2rem (el tamaño base) */
-    .section-title {
-        font-size: clamp(1.25rem, 5vw, 2rem) !important;
-        margin-bottom: 1rem !important; /* Ajuste para móvil */
-        margin-top: 1rem !important; /* Ajuste para móvil */
-    }
-}
-
-
-@media (max-width: 410px) {
-    .back-button-float{
-        margin-bottom: 55px !important;
-    }
-}
-
-
-[Immersive content redacted for brevity.]
-/* Títulos y subtítulos del index en tema claro */
-.is-theme-light .section-title {
-    color: black !important;
-}
-
-/* Estilos de Card (CON BORDE LEVE, SIN SOMBRA) para Tema Claro - PC/TABLET */
-.is-theme-light .form-card-container {
-    /* Borde: 1px sólido color oscuro (Dark) */
-    border: 1px solid #343a40; 
-    background-color: transparent;
-    box-shadow: none;
-}
-
-/* --- Estilos de Pestañas (Tabs) en Tema Claro --- */
-.is-theme-light .tabs li a {
-    /* Pestaña no activa: Gris claro */
-    color: #ccc !important; 
-}
-.is-theme-light .tabs li.is-active a {
-    /* Pestaña activa: Naranja/Warning de Bulma (ffb700) */
-    color: #ffb700 !important;
-    border-bottom-color: #ffb700 !important;
-}
-
-
-/* --- TEMA OSCURO --- */
-.is-theme-dark {
-    background-color: #4a4a4a;
-    color: #f5f5f5;
-}
-.is-theme-dark .navbar { 
-    background-color: #202020 !important;
-}
-.is-theme-dark .navbar-item, 
-.is-theme-dark .navbar-link, 
-.is-theme-dark .navbar-brand a,
-.is-theme-dark .navbar-menu .navbar-item { 
-    color: #f5f5f5 !important; 
-}
-.is-theme-dark .navbar-burger span { background-color: #f5f5f5; }
-.is-theme-dark .navbar-menu.is-active {
-    background-color: #555 !important;
-}
-/* Nuevo: El fondo de los enlaces del navbar coincide con el navbar en el tema oscuro */
-.is-theme-dark a.navbar-item,
-.is-theme-dark .navbar-link,
-.is-theme-dark .navbar-menu {
-    background-color: transparent !important;
-}
-.is-theme-dark .container {
-    /* Fondo, color y sombra eliminados para el efecto de card */
-    background: transparent;
-    color: #f5f5f5;
-    box-shadow: none;
-}
-.is-theme-dark .header .title, .is-theme-dark .header .subtitle { color: #f5f5f5 !important; }
-.is-theme-dark .label { color: #f5f5f5; }
-.is-theme-dark .input, .is-theme-dark .textarea { 
-    background-color: #555; 
-    border-color: #666; 
-    color: #f5f5f5; 
-}
-.is-theme-dark .input::placeholder, .is-theme-dark .textarea::placeholder { color: #ccc; }
-.is-theme-dark .button.is-primary { background-color: #3273dc; border-color: transparent; }
-.is-theme-dark .title.has-text-primary, .is-theme-dark .title.has-text-info { color: #f5f5f5 !important; }
-.is-theme-dark .has-text-grey { color: #ccc !important; }
-/* Títulos y subtítulos del index en tema oscuro */
-.is-theme-dark .section-title {
-    color: #ffb700 !important;
-}
-/* Nuevo: Título de la página de inicio en tema oscuro */
-.is-theme-dark .responsive-title {
-    color: #ffb700 !important;
-}
-
-/* Estilos de Card (CON BORDE LEVE, SIN SOMBRA) para Tema Oscuro - PC/TABLET */
-.is-theme-dark .form-card-container {
-    /* Borde: 1px sólido color warning (Amarillo) */
-    border: 1px solid #ffb700; 
-    background-color: transparent;
-    box-shadow: none;
-}
-
-/* --- Estilos de Pestañas (Tabs) en Tema Oscuro --- */
-.is-theme-dark .tabs li a {
-    /* Pestaña no activa: Gris claro */
-    color: #ccc !important;
-    border-bottom-color: #4a4a4a; /* Coincide con el fondo oscuro para que no se vea la línea */
-}
-.is-theme-dark .tabs li.is-active a {
-    /* Pestaña activa: Warning (Amarillo) */
-    color: #ffb700 !important;
-    border-bottom-color: #ffb700 !important;
-}
-.is-theme-dark .tabs ul {
-    border-bottom-color: #ccc; /* Línea separadora tenue */
-}
-
-
-/* --- TEMA SEPIA --- */
-.is-theme-sepia {
-    background-color: #e9e4d9;
-    color: #5a4f42;
-}
-.is-theme-sepia .navbar { background-color: #a49688 !important; }
-.is-theme-sepia .navbar-item, 
-.is-theme-sepia .navbar-link, 
-.is-theme-sepia .navbar-brand a,
-.is-theme-sepia .navbar-menu .navbar-item { 
-    color: #3d342c !important; 
-}
-.is-theme-sepia .navbar-brand a .has-text-white { color: #3d342c !important; }
-.is-theme-sepia .navbar-burger span { background-color: #3d342c; }
-/* Nuevo: El fondo de los enlaces del navbar coincide con el navbar en el tema sepia */
-.is-theme-sepia a.navbar-item,
-.is-theme-sepia .navbar-link,
-.is-theme-sepia .navbar-menu {
-    background-color: transparent !important;
-}
-.is-theme-sepia .container {
-    /* Fondo, color y sombra eliminados para el efecto de card */
-    background: transparent;
-    color: #5a4f42;
-    box-shadow: none;
-}
-.is-theme-sepia .header .title, .is-theme-sepia .header .subtitle { color: var(--sepia-text-color) !important; }
-.is-theme-sepia .label { color: #5a4f42; }
-.is-theme-sepia .input, .is-theme-sepia .textarea { 
-    background-color: #fffaf0;
-    border-color: #a49688; 
-    color: #3d342c; 
-}
-.is-theme-sepia .input::placeholder, .is-theme-sepia .textarea::placeholder { color: #887a6d; }
-.is-theme-sepia .button.is-primary { 
-    background-color: #a49688; 
-    border-color: transparent; 
-    color: #3d342c;
-}
-.is-theme-sepia .title.has-text-primary, .is-theme-sepia .title.has-text-info { color: #5a4f42 !important; }
-.is-theme-sepia .has-text-grey { color: #5a4f42 !important; }
-.is-theme-sepia .button.is-white {
-    background-color: #f7f3e8;
-    color: #5a4f42;
-}
-.is-theme-sepia .button.is-warning {
-    background-color: #a49688 !important;
-    border-color: transparent !important;
-    color: white !important;
-}
-/* Títulos y subtítulos del index en tema sepia */
-.is-theme-sepia .section-title {
-    color: #5a4f42 !important;
-}
-
-/* Estilos de Card (CON BORDE LEVE, SIN SOMBRA) para Tema Sepia - PC/TABLET */
-.is-theme-sepia .form-card-container {
-    /* Borde: 1px sólido color sepia (Café) */
-    border: 1px solid #5a4f42; 
-    background-color: transparent;
-    box-shadow: none;
-}
-
-/* --- Estilos de Pestañas (Tabs) en Tema Sepia --- */
-.is-theme-sepia .tabs li a {
-    /* Pestaña no activa: Gris claro */
-    color: #ccc !important;
-    border-bottom-color: #e9e4d9; /* Coincide con el fondo sepia */
-}
-.is-theme-sepia .tabs li.is-active a {
-    /* Pestaña activa: Marrón (5a4f42) */
-    color: #5a4f42 !important;
-    border-bottom-color: #5a4f42 !important;
-}
-.is-theme-sepia .tabs ul {
-    border-bottom-color: #a49688; /* Línea separadora tenue */
-}
-
-
-/* Estilo general para la card del formulario */
-.form-card-container {
-    padding: 1.5rem;
-    border-radius: var(--border-radius); /* 8px por defecto */
-    margin-bottom: 2rem; /* Separación de la siguiente sección/elemento */
-    transition: all 0.3s ease;
-}
-
-/* ------------------------------------- */
-/* Estilos generales para Tabs de Bulma */
-/* ------------------------------------- */
-
-/* Asegurar que la línea de la pestaña base se vea en todos los temas si no hay borde */
-.tabs ul {
-    border-bottom-color: #dbdbdb;
-}
-
-/* ------------------------------------- */
-/* Contenedor para limitar y centrar el formulario */
-/* ------------------------------------- */
-[Immersive content redacted for brevity.]
+/* Se eliminan los estilos de botones flotantes de este archivo */

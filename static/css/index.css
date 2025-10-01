@@ -1,3 +1,84 @@
+/* Estilos extraídos de base.css para el formulario de index.html */
+
+/* ------------------------------------- */
+/* ESTILOS DE FORMULARIO CARD INVISIBLE Y CENTRADO */
+/* ------------------------------------- */
+
+/* Contenedor que centra el formulario y limita el ancho en desktop/tablet */
+.centered-form-wrapper {
+    /* Por defecto en móvil: ocupa el 96% con 2% de margen a cada lado */
+    width: 96%; 
+    margin: 0 auto;
+    margin-top: -50px;
+}
+
+/* Contenedor de cada sección del formulario (Card Invisible) */
+.form-card-container {
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 2rem;
+    /* Por defecto, sin sombra. El borde se define por el tema en base.css. */
+    box-shadow: none; 
+    background-color: transparent;
+}
+
+/* Título de sección (ej: Información del Usuario) */
+.section-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+/* ------------------------------------- */
+/* RESPONSIVIDAD DEL FORMULARIO */
+/* ------------------------------------- */
+
+/* Responsividad para títulos y márgenes en móvil */
+@media (max-width: 767px) {
+    /* Elimina bordes y padding de la card para modo móvil */
+    .form-card-container {
+        border: none !important;
+        padding: 0 0.5rem !important; /* Mantenemos un padding horizontal mínimo */
+        border-radius: 0 !important;
+    }
+    
+    /* Asegura que el título del index tenga margen superior adecuado en móvil */
+    .section-title{
+        margin-top: 1.5rem !important;
+    }
+}
+
+/* Nuevos estilos responsivos para títulos en móvil pequeño */
+@media (max-width: 443px) {
+    /* Nueva regla para los títulos del formulario: tamaño responsivo y consistente */
+    .section-title {
+        font-size: clamp(1.25rem, 5vw, 2rem) !important;
+        margin-bottom: 1rem !important;
+        margin-top: 1rem !important;
+    }
+}
+
+/* Media query para PC/Tablet: Ancho del 50% y Max-Width para margen lateral */
+@media (min-width: 768px) {
+    .centered-form-wrapper {
+        width: 50%;
+        max-width: 600px; /* Asegura un buen margen lateral en pantallas muy grandes */
+        margin: 0 auto;
+    }
+
+    /* Reglas para mantener el borde de la Card SÓLO en PC/Tablet */
+    .form-card-container {
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+    }
+}
+
+
+/* ------------------------------------- */
+/* ESTILOS DE BOTONES FLOTANTES (Preexistentes en index.css) */
+/* ------------------------------------- */
+
 /* Estilos para el botón flotante de la derecha */
 .back-button-float-right {
     position: fixed !important;
@@ -36,3 +117,15 @@
     z-index: 1000;
 }
 
+/* Adaptación móvil para botones flotantes (extraído de base.css) */
+@media (max-width: 768px) {
+    .back-button-float-right {
+        bottom: 60px !important;
+    }
+}
+
+@media (max-width: 410px) {
+    .back-button-float{
+        margin-bottom: 55px !important;
+    }
+}
