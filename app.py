@@ -1,61 +1,265 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 import db
 import users
+# IMPORTACIÓN CRUCIAL: Importamos el Blueprint
+from solicitudes import solicitudes_bp 
 
 # Inicializa la aplicación de Flask
 app = Flask(__name__)
-app.secret_key = os.urandom(24)  # Clave secreta para mensajes flash
+# Clave secreta para mensajes flash (¡IMPORTANTE!)
+app.secret_key = os.urandom(24)
+
+# REGISTRO CRUCIAL: Registramos el Blueprint para que sus rutas estén disponibles
+app.register_blueprint(solicitudes_bp)
+
+# LLAMADA CRUCIAL: Asegura que la base de datos y las tablas se creen al iniciar la aplicación.
+db.create_tables()
 
 @app.route('/')
 def home():
     """Ruta para la página de inicio."""
     return render_template('home.html')
 
+# Endpoint para verificación de existencia de usuario (AJAX)
+@app.route('/check_username', methods=['GET'])
+def check_username():
+    """Verifica si un nombre de usuario existe en la base de datos."""
+    username = request.args.get('username')
+    
+    if not username:
+        return jsonify({'exists': False, 'message': 'Falta el nombre de usuario'}), 400
+
+    conn = db.get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        user_data = users.find_user_by_username(cursor, username)
+        
+        if user_data:
+            # Devuelve 'True' y el nombre de usuario encontrado
+            return jsonify({'exists': True, 'username': user_data['username']})
+        else:
+            return jsonify({'exists': False})
+    except Exception as e:
+        print(f"Error al verificar usuario: {e}")
+        return jsonify({'exists': False, 'message': 'Error interno del servidor'}), 500
+    finally:
+        conn.close()
+
+# Endpoint para cargar datos del usuario existente (AJAX)
+@app.route('/get_user_data', methods=['GET'])
+def get_user_data():
+    """Obtiene y devuelve los datos de un usuario por su nombre de usuario."""
+    username = request.args.get('username')
+    
+    if not username:
+        return jsonify({'success': False, 'message': 'Falta el nombre de usuario'}), 400
+
+    conn = db.get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Buscamos todos los campos del usuario por el username
+        user_data = users.find_user_by_username(cursor, username)
+
+        if user_data:
+            # Convertimos la fila de SQLite (diccionario/Row) a un diccionario estándar
+            # Excluimos 'id' y 'username' ya que ya se conocen
+            data = {k: user_data[k] for k in user_data.keys() if k not in ['id', 'username']}
+            return jsonify({'success': True, 'data': data})
+        else:
+            return jsonify({'success': False, 'message': 'Usuario no encontrado.'})
+    
+    except Exception as e:
+        print(f"Error al obtener datos del usuario: {e}")
+        return jsonify({'success': False, 'message': 'Error interno del servidor'}), 500
+    finally:
+        conn.close()
+
+# Endpoint para buscar los detalles completos de una solicitud (AJAX)
+@app.route('/find_request_details', methods=['GET'])
+def find_request_details():
+    """Busca una solicitud específica por nombre de usuario y número consecutivo."""
+    username = request.args.get('username')
+    request_num_raw = request.args.get('request_number') # Input crudo del usuario
+    
+    if not username or not request_num_raw:
+        return jsonify({'success': False, 'message': 'Faltan Usuario o Consecutivo.'}), 400
+
+    # --- FIX CRÍTICO: Relleno de ceros (padding) ---
+    try:
+        # 1. Intentar convertir a entero el input del usuario.
+        # 2. Convertir de nuevo a string y aplicar zfill(4) para asegurar 4 dígitos.
+        request_num_padded = str(int(request_num_raw)).zfill(4)
+    except ValueError:
+        # Si el usuario ingresa letras u otro valor no numérico, devolver error.
+        return jsonify({'success': False, 'message': 'El Consecutivo debe ser un número válido de 1 a 4 dígitos.'}), 400
+    # -----------------------------------------------
+
+    conn = db.get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Buscamos el ID del usuario primero
+        user_data = users.find_user_by_username(cursor, username)
+        if not user_data:
+            return jsonify({'success': False, 'message': 'Usuario no encontrado.'})
+
+        user_id = user_data['id']
+        
+        # --- FIX PARA DATOS CORRUPTOS EN DB: Usar LIKE para coincidir 0001 y 0001N ---
+        # Buscamos solicitudes cuyo request_number EMPIECE con el número rellenado.
+        
+        # Primero probamos la coincidencia exacta con el número de 4 dígitos
+        data = users.get_full_request_details_by_user_id_and_number(cursor, user_id, request_num_padded)
+        
+        if not data:
+            # Si no hay coincidencia exacta (ej: 0001), intentamos buscar usando LIKE.
+            # Esta es la parte que corrige el error si el dato es '0001N' o similar.
+            data = users.get_full_request_details_by_user_id_and_number_like(cursor, user_id, request_num_padded)
+
+
+        if data:
+            # Retornamos todos los datos como un diccionario estándar
+            return jsonify({'success': True, 'data': dict(data)})
+        else:
+            return jsonify({'success': False, 'message': 'Solicitud no encontrada para ese Usuario y Consecutivo.'})
+
+    except Exception as e:
+        print(f"Error al buscar solicitud completa: {e}")
+        # Retornamos un mensaje de error interno más detallado
+        return jsonify({'success': False, 'message': f'Error interno del servidor al buscar: {e}'}), 500
+    finally:
+        conn.close()
+
+
 @app.route('/solicitar', methods=['POST'])
 def solicitar_transporte():
-    """Ruta que procesa el formulario de solicitud de transporte."""
-    # Obtiene los datos del formulario
-    first_name = request.form['first_name']
-    first_lastname = request.form['first_lastname']
-    second_lastname = request.form['second_lastname']
-    phone = request.form['phone']
-    email = request.form['email']
-    pickup_location = request.form['pickup_location']
-    destination = request.form['destination']
-    notes = request.form.get('notes', '')
-
-    # Conecta a la base de datos
+    """Ruta que procesa el formulario de solicitud de transporte y guarda los datos."""
+    
+    # --- 1. Obtiene datos del Flujo de Usuario ---
+    has_user = request.form['has_user']
+    user_id = None
+    username = None
+    
+    # Variables de usuario (pueden venir de campos individuales o ser pre-existentes)
+    first_name = request.form.get('first_name', '')
+    first_lastname = request.form.get('first_lastname', '')
+    second_lastname = request.form.get('second_lastname', '')
+    phone = request.form.get('phone', '')
+    email = request.form.get('email', '')
+    
     conn = db.get_db_connection()
     cursor = conn.cursor()
 
     try:
-        # Busca al usuario por email
-        user_data = users.find_user_by_email(cursor, email)
-        
-        if user_data:
-            # El usuario ya existe, obtenemos su ID
-            user_id = user_data[0]
-            flash(f'¡Hola de nuevo, {first_name}! Tu solicitud ha sido registrada.', 'success')
+        if has_user == 'SI':
+            # Flujo 1: Usuario Existente
+            username_input = request.form['username']
+            user_data = users.find_user_by_username(cursor, username_input)
+            
+            if user_data:
+                user_id = user_data['id']
+                username = user_data['username']
+                # Mensaje para usuario existente
+                flash(f'¡Usuario {username} autenticado! Tu solicitud ha sido registrada.', 'success')
+            else:
+                flash('El usuario no existe. Por favor, verifica el nombre de usuario.', 'error')
+                return redirect(url_for('index'))
+
         else:
-            # El usuario es nuevo, lo registramos automáticamente
-            new_user_id, new_username = users.create_new_user(
+            # Flujo 2: Nuevo Usuario
+            if not all([first_name, first_lastname, second_lastname, phone, email]):
+                flash('Faltan campos obligatorios para el registro de nuevo usuario.', 'error')
+                return redirect(url_for('index'))
+                
+            new_username = users.generate_custom_username(first_name, first_lastname, second_lastname, phone)
+            
+            if users.find_user_by_email(cursor, email):
+                flash(f'El email {email} ya está registrado. Por favor, selecciona "Sí" en "¿Ya tienes un usuario?"', 'error')
+                return redirect(url_for('index'))
+            
+            if users.find_user_by_username(cursor, new_username):
+                 # Si el username generado ya existe, se podría añadir un sufijo aleatorio, 
+                 # pero por ahora lo tratamos como un error para simplificar
+                 flash('Error: El nombre de usuario generado ya existe. Por favor, contacta a soporte.', 'error')
+                 return redirect(url_for('index'))
+            
+            # Crea el nuevo usuario
+            user_id, _ = users.create_new_user(
                 cursor, first_name, first_lastname, second_lastname, phone, email
             )
-            user_id = new_user_id
-            flash(f'¡Bienvenido, {first_name}! Has sido registrado con el usuario: {new_username}. Tu solicitud ha sido registrada.', 'success')
+            username = new_username
+            
+            # Muestra el nombre de usuario autogenerado
+            flash(f'¡Tu Nuevo usuario Transavi es: {username}! Tu solicitud ha sido registrada.', 'success')
 
-        # Registra la solicitud de transporte
+        # Si no se pudo autenticar o crear el usuario, abortar el registro de solicitud.
+        if user_id is None:
+            flash('Error de autenticación o registro. Inténtalo de nuevo.', 'error')
+            return redirect(url_for('index'))
+
+
+        # --- 3. Generación del Consecutivo y Guardado de la Solicitud ---
+        
+        # 3.1 Generar el número de solicitud consecutivo (0001, 0002, etc.)
+        last_request_num = db.get_last_request_number(cursor, user_id)
+        
+        # AQUI EL VALOR DE new_request_num NO DEBE SER CONCATENADO CON NADA.
+        new_request_num = str(last_request_num + 1).zfill(4) # Formato 0001, 0002...
+
+        # 3.2 Obtiene datos del Recorrido y Entidad
+        request_type = request.form['es_entidad'] # 'SI' o 'NO'
+        entity_name = request.form.get('nombre_entidad', '')
+        entity_phone = request.form.get('telefono_empresa', '')
+        entity_notes = request.form.get('notes_entidad', '')
+        activity_type = request.form['tipo_actividad']
+        
+        # Lugar de Recogida
+        pickup_province = request.form['pickup_province']
+        pickup_canton = request.form['pickup_canton']
+        pickup_señas = request.form['pickup_señas']
+        pickup_map_link = request.form.get('pickup_map_link', '')
+        
+        # Destino
+        destination_province = request.form['destination_province']
+        destination_canton = request.form['destination_canton']
+        destination_señas = request.form['destination_señas']
+        destination_map_link = request.form.get('destination_map_link', '')
+        notes = request.form.get('notes', '') # Notas generales del recorrido
+
+        # 3.3 Registra la solicitud de transporte
         cursor.execute(
-            'INSERT INTO requests (user_id, pickup_location, destination, notes) VALUES (?, ?, ?, ?)',
-            (user_id, pickup_location, destination, notes)
+            """
+            INSERT INTO requests (
+                user_id, request_number,
+                request_type, entity_name, entity_phone, entity_notes, 
+                activity_type, 
+                pickup_province, pickup_canton, pickup_señas, pickup_map_link, 
+                destination_province, destination_canton, destination_señas, destination_map_link, 
+                notes
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                user_id, new_request_num,
+                request_type, entity_name, entity_phone, entity_notes, 
+                activity_type, 
+                pickup_province, pickup_canton, pickup_señas, pickup_map_link, 
+                destination_province, destination_canton, destination_señas, destination_map_link, 
+                notes
+            )
         )
         conn.commit()
+        
+        # Muestra el número de solicitud en el mensaje flash
+        flash(f'Número de Solicitud generado: {username}-{new_request_num}', 'info')
+
 
     except Exception as e:
-        flash(f'Ocurrió un error al procesar tu solicitud: {e}', 'error')
+        print(f"Error al procesar la solicitud: {e}") 
+        flash(f'Ocurrió un error al procesar tu solicitud. Error interno: {e}', 'error')
     finally:
-        # Cierra la conexión a la base de datos
         conn.close()
 
     return redirect(url_for('index'))
@@ -66,7 +270,10 @@ def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
+    # Usar un puerto diferente ya que el 5000 puede estar en uso en algunos entornos.
+    # Si estás ejecutando localmente, puedes cambiar el puerto.
     app.run(host='0.0.0.0', debug=True, port=3030)
+
 
 
 # Migraciones Cmder

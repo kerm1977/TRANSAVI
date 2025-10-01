@@ -1,6 +1,464 @@
 {% extends "base.html" %}
 
 {% block content %}
+<script>
+    // Estructura de Provincias y Cantones de Costa Rica
+    const provincesAndCantons = {
+        'San José': [
+            'San José', 'Escazú', 'Desamparados', 'Aserrí', 'Mora', 'Goicoechea',
+            'Santa Ana', 'Alajuelita', 'Vázquez de Coronado', 'Acosta', 'Tibás',
+            'Moravia', 'Montes de Oca', 'Turrubares', 'Dota', 'Curridabat',
+            'Pérez Zeledón', 'León Cortés'
+        ],
+        'Alajuela': [
+            'Alajuela', 'San Ramón', 'Grecia', 'San Mateo', 'Atenas', 'Naranjo',
+            'Palmares', 'Poás', 'Orotina', 'San Carlos', 'Zarcero', 'Sarchí',
+            'Upala', 'Los Chiles', 'Guatuso', 'Río Cuarto'
+        ],
+        'Cartago': [
+            'Cartago', 'Paraíso', 'La Unión', 'Jiménez', 'Turrialba', 'Alvarado',
+            'Oreamuno', 'El Guarco'
+        ],
+        'Heredia': [
+            'Heredia', 'Barva', 'Santo Domingo', 'Santa Bárbara', 'San Rafael',
+            'San Isidro', 'Belén', 'Flores', 'San Pablo', 'Sarapiquí'
+        ],
+        'Guanacaste': [
+            'Liberia', 'Nicoya', 'Santa Cruz', 'Bagaces', 'Carrillo', 'Cañas',
+            'Abangares', 'Tilarán', 'Nandayure', 'La Cruz', 'Hojancha'
+        ],
+        'Puntarenas': [
+            'Puntarenas', 'Esparza', 'Buenos Aires', 'Montes de Oro', 'Osa',
+            'Aguirre', 'Golfito', 'Coto Brus', 'Parrita', 'Corredores', 'Garabito', 'Puerto Jiménez'
+        ],
+        'Limón': [
+            'Limón', 'Pococí', 'Siquirres', 'Talamanca', 'Matina', 'Guácimo'
+        ]
+    };
+    
+    // Función de debounce para limitar la frecuencia de las llamadas a la API
+    function debounce(func, delay) {
+        let timeout;
+        return function(...args) {
+            const context = this;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), delay);
+        };
+    }
+
+    // Función para manejar la visibilidad de los campos de entidad/contacto
+    function toggleEntidadFields() {
+        const selectEntidad = document.getElementById('es_entidad');
+        const entityFields = document.getElementById('entity_fields');
+        const entitySeparator = document.getElementById('entity_separator');
+
+        if (!selectEntidad || !entityFields || !entitySeparator) {
+            return;
+        }
+
+        const isEntity = selectEntidad.value === 'SI';
+        const individualContactFields = document.getElementById('individual_contact_fields');
+
+        if (individualContactFields) {
+            individualContactFields.style.display = 'none';
+            individualContactFields.querySelectorAll('input').forEach(input => input.required = false);
+        }
+
+        // Lógica para el grupo 'SI' (Entidad)
+        if (isEntity) {
+            entityFields.style.display = 'block';
+            entitySeparator.style.display = 'block'; 
+            
+            document.getElementById('nombre_entidad').required = true;
+            document.getElementById('telefono_empresa').required = true;
+            document.getElementById('notes_entidad').required = false;
+        }
+        
+        // Lógica para el grupo 'NO' (Particular)
+        else {
+            entityFields.style.display = 'none';
+            entitySeparator.style.display = 'none'; 
+            
+            document.getElementById('nombre_entidad').required = false;
+            document.getElementById('telefono_empresa').required = false;
+            document.getElementById('notes_entidad').required = false;
+        }
+    }
+
+    // Función para manejar la visibilidad de los campos de Usuario
+    function toggleUserFields() {
+        const selectUser = document.getElementById('has_user');
+        const existingUserField = document.getElementById('existing_user_field');
+        const existingUsernameInput = document.getElementById('existing_username');
+        
+        // Referencias a los campos de datos personales (ahora siempre visibles)
+        const userFields = [
+            document.getElementById('first_name'),
+            document.getElementById('first_lastname'),
+            document.getElementById('second_lastname'),
+            document.getElementById('phone'),
+            document.getElementById('email')
+        ];
+
+
+        const isExistingUser = selectUser.value === 'SI';
+
+        // Limpiar estilos y mensajes cuando se cambia el flujo
+        document.getElementById('validation_message').innerHTML = '';
+        document.getElementById('load_data_button_container').innerHTML = '';
+        existingUsernameInput.classList.remove('is-success', 'is-danger');
+        existingUsernameInput.setCustomValidity(''); 
+
+        if (isExistingUser) {
+            existingUserField.style.display = 'block';
+            existingUsernameInput.required = true;
+            
+            // Si es usuario existente, los campos personales NO deben ser requeridos
+            // inicialmente (se llenarán con el botón Cargar Datos)
+            userFields.forEach(input => {
+                input.required = false; 
+                input.readOnly = true; // Hacerlos de solo lectura hasta que se carguen
+                input.value = ''; // Limpiar campos al cambiar a SI
+            });
+
+            if (existingUsernameInput.value.length > 0) {
+                 debouncedCheckUsername(existingUsernameInput.value);
+            }
+
+        } else {
+            existingUserField.style.display = 'none';
+            existingUsernameInput.required = false;
+            
+            // Si es nuevo usuario, los campos personales deben ser requeridos y editables
+            userFields.forEach(input => {
+                input.required = true;
+                input.readOnly = false;
+            });
+        }
+    }
+
+    // NUEVA FUNCIÓN: Cargar datos del usuario en los campos del formulario
+    async function loadUserData(username) {
+        const loadButtonContainer = document.getElementById('load_data_button_container');
+        loadButtonContainer.innerHTML = '<span class="has-text-info">Cargando datos...</span>';
+        
+        // Referencias a los campos de datos personales
+        const userFields = [
+            document.getElementById('first_name'),
+            document.getElementById('first_lastname'),
+            document.getElementById('second_lastname'),
+            document.getElementById('phone'),
+            document.getElementById('email')
+        ];
+        
+        try {
+            // NOTE: Esta es una función simulada. En un entorno real, llamarías a tu API.
+            // Para el ejemplo, simulamos datos de respuesta
+            const dummyData = {
+                first_name: "Juan",
+                first_lastname: "Pérez",
+                second_lastname: "Rodríguez",
+                phone: "88227500",
+                email: "juan.perez@example.com"
+            };
+
+            await new Promise(resolve => setTimeout(resolve, 500)); // Simula latencia
+            const result = { success: true, data: dummyData };
+
+
+            if (result.success) {
+                const data = result.data;
+                // Rellenar los campos del formulario
+                document.getElementById('first_name').value = data.first_name || '';
+                document.getElementById('first_lastname').value = data.first_lastname || '';
+                document.getElementById('second_lastname').value = data.second_lastname || '';
+                document.getElementById('phone').value = data.phone || '';
+                document.getElementById('email').value = data.email || '';
+                
+                // Hacer los campos editables y requeridos después de la carga exitosa
+                userFields.forEach(input => {
+                    input.readOnly = false;
+                    input.required = true; 
+                });
+
+                // Mostrar un mensaje de éxito temporal
+                loadButtonContainer.innerHTML = '<span class="has-text-success">¡Datos cargados!</span>';
+                
+            } else {
+                loadButtonContainer.innerHTML = '<span class="has-text-danger">Error al cargar datos.</span>';
+            }
+        } catch (error) {
+            console.error('Error al cargar datos del usuario:', error);
+            loadButtonContainer.innerHTML = '<span class="has-text-danger">Error de conexión.</span>';
+        }
+
+        // Limpiar el mensaje de carga después de 3 segundos
+        setTimeout(() => {
+            loadButtonContainer.innerHTML = ''; 
+        }, 3000);
+    }
+
+    // NUEVA FUNCIÓN: Verificar disponibilidad del nombre de usuario
+    async function checkUsernameAvailability(username) {
+        const validationMessage = document.getElementById('validation_message');
+        const existingUsernameInput = document.getElementById('existing_username');
+        const loadButtonContainer = document.getElementById('load_data_button_container');
+
+        // Limpiar campos personales y estilos
+        const userFields = ['first_name', 'first_lastname', 'second_lastname', 'phone', 'email'];
+        userFields.forEach(id => {
+            const input = document.getElementById(id);
+            input.value = '';
+            input.readOnly = true;
+            input.required = false;
+        });
+
+        // Limpiar
+        validationMessage.innerHTML = '';
+        loadButtonContainer.innerHTML = '';
+        existingUsernameInput.classList.remove('is-success', 'is-danger');
+        
+        if (username.length < 3) {
+            existingUsernameInput.setCustomValidity('Mínimo 3 caracteres.');
+            return;
+        }
+        
+        validationMessage.innerHTML = '<span class="has-text-info">Verificando...</span>';
+
+        try {
+            // NOTE: Esta es una función simulada. En un entorno real, llamarías a tu API.
+            await new Promise(resolve => setTimeout(resolve, 300)); // Simula latencia
+            const exists = (username.toLowerCase() === 'p1a1a2-88227500'); // Simula que este usuario existe
+            const data = { exists: exists, username: username };
+            // Fin de la simulación
+
+            if (data.exists) {
+                validationMessage.innerHTML = '<span class="has-text-success">¡Usuario existe!</span>';
+                existingUsernameInput.classList.add('is-success');
+                existingUsernameInput.classList.remove('is-danger');
+                existingUsernameInput.setCustomValidity(''); 
+                
+                // Mostrar el botón de cargar datos
+                loadButtonContainer.innerHTML = `
+                    <button type="button" class="button is-warning is-small is-rounded mt-2" onclick="loadUserData('${data.username}')">
+                        <span class="icon"><i class="fas fa-download"></i></span>
+                        <span>Cargar Mis Datos</span>
+                    </button>
+                `;
+
+            } else {
+                validationMessage.innerHTML = '<span class="has-text-danger">Usuario no existe.</span>';
+                existingUsernameInput.classList.add('is-danger');
+                existingUsernameInput.classList.remove('is-success');
+                existingUsernameInput.setCustomValidity('El usuario no existe en el sistema.'); 
+            }
+        } catch (error) {
+            console.error('Error al verificar usuario:', error);
+            validationMessage.innerHTML = '<span class="has-text-danger">Error de conexión al verificar.</span>';
+            existingUsernameInput.setCustomValidity('Error de conexión.');
+        }
+    }
+
+    // Aplica debounce a la función de verificación
+    const debouncedCheckUsername = debounce(checkUsernameAvailability, 500); // 500ms de espera
+
+    // Función para actualizar el select de Cantones basado en la Provincia seleccionada
+    function updateCantons(locationType) {
+        const provinceSelect = document.getElementById(`${locationType}_province`);
+        const cantonSelect = document.getElementById(`${locationType}_canton`);
+        
+        // Limpiar opciones anteriores
+        cantonSelect.innerHTML = '<option value="" disabled selected>Seleccione el Cantón</option>';
+
+        const selectedProvince = provinceSelect.value;
+        
+        if (selectedProvince && provincesAndCantons[selectedProvince]) {
+            provincesAndCantons[selectedProvince].forEach(canton => {
+                const option = document.createElement('option');
+                option.value = canton;
+                option.textContent = canton;
+                cantonSelect.appendChild(option);
+            });
+        }
+    }
+
+    // Lógica del Modal de Búsqueda
+    function openSearchModal() {
+        document.getElementById('search-modal').classList.add('is-active');
+        document.getElementById('search-results').innerHTML = ''; // Limpiar resultados
+        // Limpiar inputs
+        document.getElementById('search_username').value = '';
+        document.getElementById('search_request_number').value = '';
+    }
+
+    function closeSearchModal() {
+        document.getElementById('search-modal').classList.remove('is-active');
+    }
+    
+    // Lógica del Modal de Recibo (Nueva Vista)
+    function closeReceiptModal() {
+        document.getElementById('receipt-modal').classList.remove('is-active');
+    }
+
+    // NUEVA FUNCIÓN: Muestra la vista de recibo completa
+    function viewReceipt(requestData) {
+        // 1. Cerrar el modal de búsqueda
+        closeSearchModal(); 
+        
+        // 2. Generar el contenido del recibo y ponerlo en el modal de recibo
+        const receiptContainer = document.getElementById('receipt-content');
+        receiptContainer.innerHTML = generateReceipt(requestData);
+        
+        // 3. Abrir el modal de recibo
+        document.getElementById('receipt-modal').classList.add('is-active');
+    }
+
+    // NUEVA FUNCIÓN: Generar el enlace de la solicitud con el botón "Ver más"
+    function generateRequestLink(data) {
+        // Para pasar el objeto de datos complejos al onclick, lo serializamos
+        const dataString = encodeURIComponent(JSON.stringify(data));
+        
+        return `
+            <div class="box has-background-light p-4 mt-3 is-flex is-justify-content-space-between is-align-items-center" style="border-radius: 8px;">
+                <div class="is-flex is-flex-direction-column">
+                    <p class="is-size-6 has-text-dark has-text-weight-bold">Solicitud #${data.request_number}</p>
+                    <p class="is-size-7 has-text-grey-dark">Usuario: ${data.username}</p>
+                </div>
+                <div>
+                    <button class="button is-warning is-small is-rounded" onclick="viewReceipt(JSON.parse(decodeURIComponent('${dataString}')))">
+                        <span class="icon is-small"><i class="fas fa-eye"></i></span>
+                        <span>Ver más</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+
+    async function searchRequest() {
+        const username = document.getElementById('search_username').value.trim();
+        const request_number = document.getElementById('search_request_number').value.trim();
+        const resultsContainer = document.getElementById('search-results');
+        
+        resultsContainer.innerHTML = '<p class="has-text-info">Buscando solicitud...</p>';
+        
+        if (!username || !request_number || request_number.length !== 4 || isNaN(request_number)) {
+             resultsContainer.innerHTML = '<p class="has-text-danger">Por favor ingrese el Usuario y un Consecutivo válido (4 dígitos).</p>';
+             return;
+        }
+
+        try {
+            // NOTE: SIMULACIÓN DE LLAMADA AL SERVIDOR
+            await new Promise(resolve => setTimeout(resolve, 700)); // Simula latencia
+            
+            let result;
+            if (username.toLowerCase() === 'p1a1a2-88227500' && request_number === '0001') {
+                // Datos de ejemplo para la solicitud encontrada
+                const dummyData = {
+                    username: 'p1a1a2-88227500',
+                    request_number: '0001',
+                    request_date: new Date().toISOString(),
+                    activity_type: 'TURISMO',
+                    pickup_province: 'San José',
+                    pickup_canton: 'Curridabat',
+                    pickup_señas: 'Frente al parque',
+                    destination_province: 'Puntarenas',
+                    destination_canton: 'Osa',
+                    destination_señas: 'Playa Ventanas',
+                    notes: 'Viaje de 3 días para un grupo de 15 personas.',
+                    entity_name: 'Transportes Ejemplo S.A.',
+                    entity_phone: '2233-4455',
+                    entity_notes: 'Requieren factura A-4.'
+                };
+                result = { success: true, data: dummyData };
+            } else {
+                result = { success: false, message: 'Solicitud no encontrada para ese Usuario y Consecutivo.' };
+            }
+            // FIN DE SIMULACIÓN
+
+            if (result.success) {
+                const data = result.data;
+                // Mostrar el enlace y el botón "Ver más"
+                resultsContainer.innerHTML = generateRequestLink(data);
+            } else {
+                resultsContainer.innerHTML = `<p class="has-text-danger">${result.message || 'Solicitud no encontrada.'}</p>`;
+            }
+
+        } catch (error) {
+            console.error('Error al buscar solicitud:', error);
+            resultsContainer.innerHTML = '<p class="has-text-danger">Error de conexión al servidor.</p>';
+        }
+    }
+    
+    // Función para formatear y mostrar los datos de la solicitud (Recibo)
+    function generateReceipt(data) {
+        let receipt = `
+            <div class="box has-background-light p-5" style="border-radius: 8px;">
+                <h3 class="title is-4 has-text-centered has-text-dark">RECIBO DE SOLICITUD</h3>
+                <p class="subtitle is-6 has-text-centered has-text-dark">Detalle Completo</p>
+                <hr style="background-color: #4a4a4a;">
+                
+                <p class="is-size-5 has-text-dark has-text-weight-bold">Solicitud: ${data.request_number}</p>
+                <p class="is-size-6 has-text-dark">Usuario: ${data.username}</p>
+                <p class="is-size-6 has-text-dark">Fecha de Creación: ${new Date(data.request_date).toLocaleString()}</p>
+                <p class="is-size-6 has-text-dark">Tipo de Actividad: ${data.activity_type}</p>
+                
+                <hr>
+
+                <p class="is-size-5 has-text-dark has-text-weight-bold">Información del Recorrido</p>
+                <p class="has-text-dark"><strong>Recogida:</strong> ${data.pickup_province}, ${data.pickup_canton}</p>
+                <p class="has-text-dark ml-4">Señas: ${data.pickup_señas}</p>
+                <p class="has-text-dark mt-2"><strong>Destino:</strong> ${data.destination_province}, ${data.destination_canton}</p>
+                <p class="has-text-dark ml-4">Señas: ${data.destination_señas}</p>
+                
+                ${data.notes ? `<p class="has-text-dark mt-4"><strong>Notas Generales:</strong> ${data.notes}</p>` : ''}
+                
+                ${data.entity_name ? `
+                    <hr>
+                    <p class="is-size-5 has-text-dark has-text-weight-bold">Detalles de la Entidad</p>
+                    <p class="has-text-dark"><strong>Entidad:</strong> ${data.entity_name}</p>
+                    <p class="has-text-dark"><strong>Teléfono Empresa:</strong> ${data.entity_phone}</p>
+                    ${data.entity_notes ? `<p class="has-text-dark"><strong>Notas Entidad:</strong> ${data.entity_notes}</p>` : ''}
+                ` : ''}
+
+                <hr>
+                <p class="has-text-centered has-text-grey">--- Fin del Recibo ---</p>
+            </div>
+        `;
+        return receipt;
+    }
+
+
+    // Inicialización y Listeners
+    document.addEventListener('DOMContentLoaded', () => {
+        // Inicialización de Entidad
+        const selectEntidad = document.getElementById('es_entidad');
+        if (selectEntidad) {
+            toggleEntidadFields(); 
+            selectEntidad.addEventListener('change', toggleEntidadFields);
+        }
+        
+        // Inicialización de Usuario
+        const selectUser = document.getElementById('has_user');
+        if (selectUser) {
+            toggleUserFields(); 
+            selectUser.addEventListener('change', toggleUserFields);
+        }
+
+        // Event listener para Lugar de Recogida
+        const pickupProvinceSelect = document.getElementById('pickup_province');
+        if (pickupProvinceSelect) {
+            pickupProvinceSelect.addEventListener('change', () => updateCantons('pickup'));
+        }
+
+        // Event listener para Destino
+        const destinationProvinceSelect = document.getElementById('destination_province');
+        if (destinationProvinceSelect) {
+            destinationProvinceSelect.addEventListener('change', () => updateCantons('destination'));
+        }
+    });
+
+</script>
 
 <!-- Nuevo contenedor para limitar el ancho del formulario en desktop/tablet y centrarlo -->
 <div class="centered-form-wrapper">
@@ -11,49 +469,130 @@
     </span>
 </p>
 
+    <!-- Botón de Búsqueda de Solicitud (Fuera del formulario principal) -->
+    <div class="has-text-centered mb-4">
+        <button type="button" class="button is-info is-small is-rounded" onclick="openSearchModal()">
+            <span class="icon"><i class="fas fa-search"></i></span>
+            <span>Buscar Solicitud</span>
+        </button>
+    </div>
 
-
-
+    <!-- Se revierte el onsubmit para que el formulario se envíe al servidor Flask -->
     <form action="{{ url_for('solicitar_transporte') }}" method="post">       
         
         <!-- Sección de Información del Usuario -->
         <h2 class="title has-text-centered section-title">Información del Usuario</h2>
         <div class="form-card-container">
-            
+
+            <!-- NUEVO CAMPO: YA TIENES UN USUARIO? -->
             <div class="field">
-                <label class="label" for="first_name">Nombre:</label>
+                <label class="label" for="has_user">¿Ya tienes un usuario?</label>
                 <div class="control">
-                    <input class="input is-rounded" type="text" id="first_name" name="first_name" required>
+                    <div class="select is-rounded is-fullwidth is-warning">
+                        <select id="has_user" name="has_user" required onchange="toggleUserFields()">
+                            <option value="NO" selected>No</option>
+                            <option value="SI">Sí</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CAMPO CONDICIONAL: SI YA TIENE USUARIO (SI) -->
+            <div id="existing_user_field" style="display:none;">
+                <div class="field">
+                    <label class="label" for="existing_username">Coloca tu Usuario (Ejemplo: P1A1A2-88227500):</label>
+                    <div class="control">
+                        <!-- CAMBIO CLAVE: Agregamos oninput para la validación automática -->
+                        <input class="input is-rounded" type="text" id="existing_username" name="username" oninput="debouncedCheckUsername(this.value)">
+                    </div>
+                    <!-- Contenedor para el mensaje de validación -->
+                    <p class="help" id="validation_message"></p>
+                    <!-- Contenedor para el botón de cargar datos -->
+                    <div id="load_data_button_container"></div>
+                </div>
+            </div>
+
+
+            <!-- BLOQUE DE CAMPOS DE DATOS PERSONALES (AHORA SIEMPRE VISIBLES) -->
+            <!-- Los campos Nombre, Teléfono, etc. siempre están aquí y se controlan con JS si son required/readOnly -->
+            <div>
+                <div class="field">
+                    <label class="label" for="first_name">Nombre:</label>
+                    <div class="control">
+                        <input class="input is-rounded" type="text" id="first_name" name="first_name" required>
+                    </div>
+                </div>
+                
+                <div class="field">
+                    <label class="label" for="first_lastname">Primer Apellido:</label>
+                    <div class="control">
+                        <input class="input is-rounded" type="text" id="first_lastname" name="first_lastname" required>
+                    </div>
+                </div>
+                
+                <div class="field">
+                    <label class="label" for="second_lastname">Segundo Apellido:</label>
+                    <div class="control">
+                        <input class="input is-rounded" type="text" id="second_lastname" name="second_lastname" required>
+                    </div>
+                </div>
+                
+                <div class="field">
+                    <label class="label" for="phone">Teléfono:</label>
+                    <div class="control">
+                        <input class="input is-rounded" type="tel" id="phone" name="phone" required>
+                    </div>
+                </div>
+                
+                <div class="field">
+                    <label class="label" for="email">Email:</label>
+                    <div class="control">
+                        <input class="input is-rounded" type="email" id="email" name="email" required>
+                    </div>
                 </div>
             </div>
             
+            <!-- NUEVO CAMPO 2: ES UNA ENTIDAD -->
             <div class="field">
-                <label class="label" for="first_lastname">Primer Apellido:</label>
+                <label class="label" for="es_entidad">¿Es una Entidad (Empresa/Institución)?</label>
                 <div class="control">
-                    <input class="input is-rounded" type="text" id="first_lastname" name="first_lastname" required>
+                    <div class="select is-rounded is-fullwidth is-warning">
+                        <select id="es_entidad" name="es_entidad" required onchange="toggleEntidadFields()">
+                            <option value="NO" selected>No</option>
+                            <option value="SI">Sí</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BLOQUE CONDICIONAL: SI ES ENTIDAD (SI) -->
+            <div id="entity_fields" style="display:none;">
+                <p class="subtitle is-6 has-text-weight-bold mt-4 mb-3">Detalles de la Entidad</p>
+                <div class="field">
+                    <label class="label" for="nombre_entidad">Nombre de la Entidad:</label>
+                    <div class="control">
+                        <!-- El campo se hace requerido/no requerido en JS -->
+                        <input class="input is-rounded" type="text" id="nombre_entidad" name="nombre_entidad">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label" for="telefono_empresa">Teléfono de la Empresa:</label>
+                    <div class="control">
+                         <!-- El campo se hace requerido/no requerido en JS -->
+                        <input class="input is-rounded" type="tel" id="telefono_empresa" name="telefono_empresa">
+                    </div>
+                </div>
+                <!-- NUEVO CAMPO: NOTAS ADICIONALES ENTIDAD -->
+                <div class="field">
+                    <label class="label" for="notes_entidad">Notas Adicionales Entidad (opcional):</label>
+                    <div class="control">
+                        <textarea class="textarea is-rounded" id="notes_entidad" name="notes_entidad" rows="3"></textarea>
+                    </div>
                 </div>
             </div>
             
-            <div class="field">
-                <label class="label" for="second_lastname">Segundo Apellido:</label>
-                <div class="control">
-                    <input class="input is-rounded" type="text" id="second_lastname" name="second_lastname" required>
-                </div>
-            </div>
-            
-            <div class="field">
-                <label class="label" for="phone">Teléfono:</label>
-                <div class="control">
-                    <input class="input is-rounded" type="tel" id="phone" name="phone" required>
-                </div>
-            </div>
-            
-            <div class="field">
-                <label class="label" for="email">Email:</label>
-                <div class="control">
-                    <input class="input is-rounded" type="email" id="email" name="email" required>
-                </div>
-            </div>
+            <!-- SEPARADOR DE ENTIDAD (Visible solo si es ENTIDAD) -->
+            <hr id="entity_separator" style="display:none; margin-top: 1.5rem; margin-bottom: 1.5rem;">
             
         </div>
         
@@ -61,23 +600,120 @@
         <h2 class=" has-text-centered section-title">Información del Recorrido</h2>
         <div class="form-card-container">
             
+            <!-- CAMPO DE TIPO DE ACTIVIDAD -->
             <div class="field">
-                <label class="label" for="pickup_location">Lugar de Recogida:</label>
+                <label class="label" for="tipo_actividad">Tipo de Actividad:</label>
                 <div class="control">
-                    <input class="input is-rounded" type="text" id="pickup_location" name="pickup_location" required>
+                    <div class="select is-rounded is-fullwidth is-warning">
+                        <select id="tipo_actividad" name="tipo_actividad" required>
+                            <option value="" disabled selected>Seleccione el tipo de actividad</option>
+                            <option value="EMPRESARIAL">Empresarial</option>
+                            <option value="TURISMO">Turismo</option>
+                            <option value="SENDERISMO">Senderismo</option>
+                            <option value="DEPORTE">Deporte</option>
+                            <option value="COMPARSA">Comparsa</option>
+                            <option value="CICLISMO">Ciclismo</option>
+                            <option value="INTERNACIONAL(PANAMÁ)">Internacional (Panamá)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- INICIO: LUGAR DE RECOGIDA (PROVINCIA, CANTÓN, SEÑAS) -->
+            <!-- Se añade has-text-warning para la legibilidad -->
+            <p class="subtitle is-6 has-text-weight-bold mt-4 mb-3 has-text-warning">Lugar de Recogida</p>
+            <div class="field">
+                <label class="label" for="pickup_province">Provincia:</label>
+                <div class="control">
+                    <div class="select is-rounded is-fullwidth is-warning">
+                        <select id="pickup_province" name="pickup_province" required>
+                            <option value="" disabled selected>Seleccione la Provincia</option>
+                            {% for province in ['San José', 'Alajuela', 'Cartago', 'Heredia', 'Guanacaste', 'Puntarenas', 'Limón'] %}
+                                <option value="{{ province }}">{{ province }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label" for="pickup_canton">Cantón:</label>
+                <div class="control">
+                    <div class="select is-rounded is-fullwidth is-warning">
+                        <select id="pickup_canton" name="pickup_canton" required>
+                            <option value="" disabled selected>Seleccione el Cantón</option>
+                            <!-- Los cantones se cargarán con JavaScript al seleccionar una Provincia -->
+                        </select>
+                    </div>
                 </div>
             </div>
             
             <div class="field">
-                <label class="label" for="destination">Destino:</label>
+                <label class="label" for="pickup_señas">Otras señas:</label>
                 <div class="control">
-                    <input class="input is-rounded" type="text" id="destination" name="destination" required>
+                    <input class="input is-rounded" type="text" id="pickup_señas" name="pickup_señas" required>
                 </div>
             </div>
+
+            <!-- NUEVO CAMPO: ENLACE WAZE/GOOGLE MAPS (LUGAR DE RECOGIDA) -->
+            <div class="field">
+                <label class="label" for="pickup_map_link">Pega el enlace de Waze o Google Maps del lugar:</label>
+                <div class="control">
+                    <!-- Se usa type="url" para validación de formato de URL -->
+                    <input class="input is-rounded" type="url" id="pickup_map_link" name="pickup_map_link" placeholder="Acepta enlaces de Waze, Google Maps o archivos .gpx, .kml, .kmz">
+                </div>
+            </div>
+            <!-- FIN: LUGAR DE RECOGIDA -->
+
+            <!-- INICIO: DESTINO (PROVINCIA, CANTÓN, SEÑAS) -->
+            <!-- Se añade has-text-warning para la legibilidad -->
+            <p class="subtitle is-6 has-text-weight-bold mt-6 mb-3 has-text-warning">Destino</p>
+            <div class="field">
+                <label class="label" for="destination_province">Provincia:</label>
+                <div class="control">
+                    <div class="select is-rounded is-fullwidth is-warning">
+                        <select id="destination_province" name="destination_province" required>
+                            <option value="" disabled selected>Seleccione la Provincia</option>
+                            {% for province in ['San José', 'Alajuela', 'Cartago', 'Heredia', 'Guanacaste', 'Puntarenas', 'Limón'] %}
+                                <option value="{{ province }}">{{ province }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label" for="destination_canton">Cantón:</label>
+                <div class="control">
+                    <div class="select is-rounded is-fullwidth is-warning">
+                        <select id="destination_canton" name="destination_canton" required>
+                            <option value="" disabled selected>Seleccione el Cantón</option>
+                            <!-- Los cantones se cargarán con JavaScript al seleccionar una Provincia -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="field">
+                <label class="label" for="destination_señas">Otras señas:</label>
+                <div class="control">
+                    <input class="input is-rounded" type="text" id="destination_señas" name="destination_señas" required>
+                </div>
+            </div>
+
+            <!-- NUEVO CAMPO: ENLACE WAZE/GOOGLE MAPS (DESTINO) -->
+            <div class="field">
+                <label class="label" for="destination_map_link">Pega el enlace de Waze o Google Maps del lugar:</label>
+                <div class="control">
+                    <!-- Se usa type="url" para validación de formato de URL -->
+                    <input class="input is-rounded" type="url" id="destination_map_link" name="destination_map_link" placeholder="Acepta enlaces de Waze, Google Maps o archivos .gpx, .kml, .kmz">
+                </div>
+            </div>
+            <!-- FIN: DESTINO -->
             
         </div>
         
-        <!-- Notas Adicionales -->
+        <!-- Notas Adicionales del Recorrido (Sección general al final) -->
         <div class="field">
             <label class="label" for="notes">Notas Adicionales (opcional):</label>
             <div class="control">
@@ -98,5 +734,59 @@
         </div>
     </form>
 </div>
+
+<!-- Modal de Búsqueda (Se mantiene para la entrada de datos) -->
+<div class="modal" id="search-modal">
+    <div class="modal-background" onclick="closeSearchModal()"></div>
+    <div class="modal-card">
+        <header class="modal-card-head has-background-dark">
+            <p class="modal-card-title has-text-warning">Buscar Solicitud</p>
+            <button class="delete is-large" aria-label="close" onclick="closeSearchModal()"></button>
+        </header>
+        <section class="modal-card-body has-background-dark">
+            <div class="content">
+                <p class="has-text-light">Ingrese su **Usuario** y el **Consecutivo** de Solicitud (4 dígitos).</p>
+
+                <div class="field">
+                    <label class="label has-text-light" for="search_username">Usuario:</label>
+                    <div class="control">
+                        <input class="input is-rounded" type="text" id="search_username" placeholder="Ej: p1a1a2-88227500">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label has-text-light" for="search_request_number">Consecutivo (4 dígitos):</label>
+                    <div class="control">
+                        <input class="input is-rounded" type="text" id="search_request_number" placeholder="Ej: 0001" maxlength="4">
+                    </div>
+                </div>
+
+                <div id="search-results" class="mt-4">
+                    <!-- Aquí se mostrarán los resultados o el enlace con el botón Ver Más -->
+                </div>
+            </div>
+        </section>
+        <footer class="modal-card-foot has-background-dark">
+            <button class="button is-warning is-rounded" onclick="searchRequest()">Buscar</button>
+            <button class="button is-dark is-rounded" onclick="closeSearchModal()">Cancelar</button>
+        </footer>
+    </div>
+</div>
+
+<!-- NUEVO: Modal de Recibo (Simula la nueva vista de Recibo) -->
+<div class="modal" id="receipt-modal">
+    <div class="modal-background" onclick="closeReceiptModal()"></div>
+    <!-- Se usa modal-content en lugar de modal-card para permitir un scroll más flexible en la "vista" del recibo -->
+    <div class="modal-content"> 
+        <div id="receipt-content">
+            <!-- El contenido del recibo completo se inserta aquí -->
+        </div>
+        <div class="has-text-centered mt-4">
+            <button class="button is-dark is-rounded is-large" onclick="closeReceiptModal()">Cerrar Vista</button>
+        </div>
+    </div>
+    <button class="modal-close is-large" aria-label="close" onclick="closeReceiptModal()"></button>
+</div>
+
 
 {% endblock %}

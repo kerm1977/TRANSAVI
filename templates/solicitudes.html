@@ -1,0 +1,416 @@
+{% extends "base.html" %}
+
+{% block title %}Panel de Solicitudes{% endblock %}
+
+{% block content %}
+
+<!-- Contenedor principal para centrar el contenido y limitar el ancho -->
+<div class="centered-form-wrapper" style="max-width: 1000px; width: 98%;">
+    
+    <div class="header has-text-centered mb-5">
+        <!-- Títulos primarios suelen ser brillantes en temas oscuros -->
+        <h1 class="title is-2 has-text-primary">Panel de Solicitudes (Superusuario)</h1>
+        <p class="subtitle is-5 has-text-grey-light">Busca un usuario por su nombre de usuario para ver sus solicitudes y detalles.</p>
+    </div>
+    
+    <hr style="background-color: #444;">
+
+    <!-- Sección del Buscador de Usuarios -->
+    <!-- Fondo transparente/heredado -->
+    <div class="box p-5 mb-5">
+        <h2 class="title is-4 has-text-warning">Buscador de Usuarios</h2>
+        <div class="field has-addons is-fullwidth">
+            <div class="control is-expanded">
+                <!-- APLICAMOS is-dark AL INPUT para que se adapte al tema oscuro -->
+                <input class="input is-rounded is-large is-dark" type="text" id="user_search_input" placeholder="Ingresa el nombre de usuario (Ej: krm-86227500)">
+            </div>
+            <div class="control">
+                <button class="button is-warning is-large is-rounded" onclick="searchUser()">
+                    <span class="icon is-left">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <span>Buscar</span>
+                </button>
+            </div>
+        </div>
+        <!-- Aseguramos que el mensaje sea visible sobre el fondo oscuro -->
+        <p class="help mt-2 has-text-light" id="search_message"></p>
+    </div>
+    
+    <hr style="background-color: #444;">
+    
+    <!-- Sección de Detalles del Usuario y Solicitudes -->
+    <!-- Inicialmente oculta. Se muestra solo después de una búsqueda exitosa. -->
+    <div id="user_details_section" style="display:none;">
+        <h2 class="title is-4 has-text-primary mb-4">Detalle del Usuario</h2>
+        
+        <!-- Tarjeta de Información del Usuario (Fondo transparente/heredado) -->
+        <div class="card mb-5">
+            <div class="card-content">
+                <div class="media">
+                    <div class="media-content">
+                        <!-- has-text-warning resalta el nombre de usuario sobre el fondo oscuro -->
+                        <p class="title is-5 has-text-warning" id="detail_username"></p>
+                        <p class="subtitle is-6 has-text-grey-light" id="detail_name"></p>
+                    </div>
+                </div>
+                <!-- has-text-white para asegurar legibilidad sobre fondo oscuro -->
+                <div class="content has-text-white">
+                    <p><span class="icon-text"><span class="icon has-text-warning"><i class="fas fa-envelope"></i></span><span id="detail_email"></span></span></p>
+                    <p><span class="icon-text"><span class="icon has-text-warning"><i class="fas fa-phone"></i></span><span id="detail_phone"></span></span></p>
+                </div>
+            </div>
+        </div>
+        
+        <h3 class="title is-5 has-text-light">Solicitudes Realizadas (<span id="request_count_display">0</span>)</h3>
+        
+        <div class="table-container">
+            <!-- Tablas oscuras para consistencia: is-dark -->
+            <table class="table is-dark is-striped is-fullwidth is-hoverable is-bordered" id="requests_table">
+                <thead>
+                    <tr>
+                        <th class="has-text-centered has-text-warning"># Solicitud</th>
+                        <th class="has-text-centered is-hidden-mobile has-text-warning">Fecha</th>
+                        <th class="has-text-centered is-hidden-mobile has-text-warning">Tipo</th>
+                        <th class="has-text-centered has-text-warning">Origen / Destino</th>
+                        <th class="has-text-centered has-text-warning">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="requests_table_body">
+                    <tr><td colspan="5" class="has-text-centered has-text-info">Buscando solicitudes...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Sección de Lista de Todos los Usuarios (Original) -->
+    <!-- Se muestra inicialmente, se oculta si la búsqueda es exitosa -->
+    <div id="all_users_section">
+        <h2 class="title is-4 has-text-light">Todos los Usuarios Registrados</h2>
+        <p class="subtitle is-6 has-text-grey-light">Lista completa de usuarios en el sistema (Sin filtrar).</p>
+        <div class="table-container">
+            <!-- Tablas oscuras para consistencia: is-dark -->
+            <table class="table is-dark is-striped is-fullwidth is-hoverable is-bordered">
+                <thead>
+                    <tr>
+                        <th class="has-text-centered is-hidden-mobile has-text-warning">ID Interno</th>
+                        <th class="has-text-centered has-text-warning">Usuario</th>
+                        <th class="has-text-centered has-text-warning"># Solicitudes</th>
+                        <th class="has-text-centered has-text-warning">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if users %}
+                        {% for user in users %}
+                        <!-- Aseguramos el texto claro en filas que no estén seleccionadas/resaltadas -->
+                        <tr class="has-text-centered user-row has-text-light" data-username="{{ user.username }}">
+                            <td class="is-hidden-mobile">{{ user.id }}</td>
+                            <td class="has-text-weight-bold has-text-info-light">{{ user.username }}</td>
+                            <td>
+                                <span class="tag is-info is-light is-medium">
+                                    {{ user.request_count }}
+                                </span>
+                            </td>
+                            <td>
+                                <!-- Se agrega la funcionalidad de búsqueda al botón "Ver Detalle" -->
+                                <button class="button is-small is-rounded is-warning" onclick="searchUser('{{ user.username }}')">
+                                    <span class="icon"><i class="fas fa-eye"></i></span>
+                                    <span>Ver Detalle</span>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="has-text-centered has-text-danger">No hay usuarios registrados en el sistema.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para ver el detalle de la Solicitud/Factura (Reutilizado del index.html, pero con JS aquí) -->
+<div class="modal" id="receipt-modal">
+    <!-- El fondo oscuro del modal ya maneja la oscuridad exterior -->
+    <div class="modal-background" onclick="closeReceiptModal()"></div>
+    <div class="modal-content"> 
+        <div id="receipt-content">
+            <!-- El contenido del recibo completo se inserta aquí -->
+        </div>
+        <div class="has-text-centered mt-4">
+            <button class="button is-dark is-rounded is-large" onclick="closeReceiptModal()">Cerrar Vista</button>
+        </div>
+    </div>
+    <button class="modal-close is-large" aria-label="close" onclick="closeReceiptModal()"></button>
+</div>
+
+
+<script>
+    // --- SIMULACIÓN DE DATOS (REEMPLAZAR CON LLAMADAS REALES AL SERVIDOR) ---
+    const MOCK_USERS = [
+        { 
+            id: 1, 
+            username: 'krm-86227500', 
+            first_name: 'Kenneth', 
+            first_lastname: 'Ruiz', 
+            second_lastname: 'Matamoros', 
+            phone: '86227500', 
+            email: 'kenth1977@gmail.com', 
+            request_count: 2,
+            requests: [
+                {
+                    request_number: '0001',
+                    request_date: '2025-10-01 04:44:33',
+                    activity_type: 'TURISMO',
+                    pickup_province: 'Cartago',
+                    pickup_canton: 'La Unión',
+                    pickup_señas: 'cerca del super',
+                    destination_province: 'Cartago',
+                    destination_canton: 'Turrialba',
+                    destination_señas: 'Volcán Turrialba',
+                    notes: 'Viaje de un día para 5 personas.',
+                    entity_name: null
+                },
+                {
+                    request_number: '0002',
+                    request_date: '2025-10-05 10:00:00',
+                    activity_type: 'EMPRESARIAL',
+                    pickup_province: 'San José',
+                    pickup_canton: 'San José',
+                    pickup_señas: 'Oficinas centrales',
+                    destination_province: 'Alajuela',
+                    destination_canton: 'Alajuela',
+                    destination_señas: 'Aeropuerto',
+                    notes: 'Transporte de ejecutivos, requiere factura A-10.',
+                    entity_name: 'TechSolutions S.A.',
+                    entity_phone: '2288-9900',
+                    entity_notes: 'Facturar a nombre de la empresa.'
+                }
+            ]
+        },
+        { 
+            id: 2, 
+            username: 'p1a1a2-88227500', 
+            first_name: 'Juan', 
+            first_lastname: 'Pérez', 
+            second_lastname: 'Rodríguez', 
+            phone: '88227500', 
+            email: 'juan.perez@example.com', 
+            request_count: 5,
+            requests: [
+                {
+                    request_number: '0003',
+                    request_date: '2025-09-20 12:30:00',
+                    activity_type: 'CICLISMO',
+                    pickup_province: 'Heredia',
+                    pickup_canton: 'San Rafael',
+                    pickup_señas: 'Cruce principal',
+                    destination_province: 'Guanacaste',
+                    destination_canton: 'Cañas',
+                    destination_señas: 'Ruta 606',
+                    notes: 'Traslado de 10 bicicletas y 10 personas.',
+                    entity_name: null
+                }
+            ]
+        }
+    ];
+
+    // Función para simular la búsqueda en el servidor
+    function mockSearch(username) {
+        return new Promise(resolve => {
+            setTimeout(() => { // Simula latencia
+                const user = MOCK_USERS.find(u => u.username.toLowerCase() === username.toLowerCase());
+                resolve(user);
+            }, 500);
+        });
+    }
+    // --- FIN SIMULACIÓN DE DATOS ---
+
+    // Función principal de búsqueda
+    async function searchUser(usernameFromButton = null) {
+        const input = document.getElementById('user_search_input');
+        const username = usernameFromButton || input.value.trim();
+        const message = document.getElementById('search_message');
+        const detailsSection = document.getElementById('user_details_section');
+        const allUsersSection = document.getElementById('all_users_section');
+
+        // Ocultar sección de detalles y mostrar mensaje de búsqueda
+        detailsSection.style.display = 'none';
+        message.className = 'help has-text-info';
+        message.textContent = `Buscando usuario: ${username}...`;
+
+        if (!username) {
+            message.className = 'help has-text-danger';
+            message.textContent = 'Por favor, ingrese un nombre de usuario para buscar.';
+            return;
+        }
+
+        try {
+            // Aquí deberías usar la llamada real al servidor:
+            // const response = await fetch(`/solicitudes/user_requests/${username}`);
+            // const userData = await response.json();
+            
+            const userData = await mockSearch(username);
+
+            if (userData) {
+                message.className = 'help has-text-success';
+                message.textContent = `Usuario encontrado: ${userData.username}`;
+                
+                // Mostrar detalles y solicitudes
+                displayUserDetails(userData);
+                displayUserRequests(userData.requests);
+                
+                // Cambiar visibilidad de las secciones
+                detailsSection.style.display = 'block';
+                allUsersSection.style.display = 'none'; // Ocultar lista completa al mostrar el detalle
+                
+                // Enfocar y resaltar la fila en la tabla general antes de ocultarla
+                highlightUserRow(userData.username);
+
+            } else {
+                message.className = 'help has-text-danger';
+                message.textContent = `Usuario "${username}" no encontrado.`;
+                
+                // Si no se encuentra, mostrar solo la lista de todos los usuarios
+                detailsSection.style.display = 'none';
+                allUsersSection.style.display = 'block';
+            }
+            
+            // Si la búsqueda viene del input, actualizar el valor para reflejar la búsqueda
+            if (!usernameFromButton) {
+                 input.value = username;
+            }
+
+        } catch (error) {
+            console.error('Error al buscar usuario:', error);
+            message.className = 'help has-text-danger';
+            message.textContent = 'Error de conexión al buscar el usuario.';
+            // En caso de error, volver al estado inicial: mostrar lista de usuarios
+            document.getElementById('user_details_section').style.display = 'none';
+            document.getElementById('all_users_section').style.display = 'block';
+        }
+    }
+    
+    // Resalta la fila del usuario buscado en la tabla de todos los usuarios
+    function highlightUserRow(username) {
+        document.querySelectorAll('.user-row').forEach(row => {
+            row.classList.remove('is-selected', 'has-background-warning-light');
+            if (row.dataset.username === username) {
+                // Usamos un color que contraste para la selección, como warning-light
+                row.classList.add('is-selected', 'has-background-warning-light'); 
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    }
+
+    // Muestra los datos del usuario en la tarjeta de detalle
+    function displayUserDetails(user) {
+        document.getElementById('detail_username').textContent = user.username;
+        // Se asegura que el color del texto sea visible sobre el fondo oscuro
+        document.getElementById('detail_username').classList.remove('has-text-link'); 
+        document.getElementById('detail_username').classList.add('has-text-warning'); 
+        
+        document.getElementById('detail_name').textContent = `${user.first_name} ${user.first_lastname} ${user.second_lastname}`;
+        document.getElementById('detail_email').textContent = user.email;
+        document.getElementById('detail_phone').textContent = user.phone;
+        document.getElementById('request_count_display').textContent = user.request_count;
+    }
+
+    // Muestra la lista de solicitudes del usuario
+    function displayUserRequests(requests) {
+        const tableBody = document.getElementById('requests_table_body');
+        tableBody.innerHTML = ''; // Limpiar contenido anterior
+
+        if (!requests || requests.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="5" class="has-text-centered has-text-grey-light">No hay solicitudes (facturas) registradas para este usuario.</td></tr>`;
+            return;
+        }
+
+        requests.forEach(request => {
+            const row = document.createElement('tr');
+            row.className = 'has-text-centered';
+            
+            // Para pasar el objeto de datos complejos al onclick, lo serializamos (como en index.html)
+            const dataString = encodeURIComponent(JSON.stringify(request));
+
+            row.innerHTML = `
+                <td class="has-text-weight-bold has-text-white">${request.request_number}</td>
+                <td class="is-hidden-mobile has-text-light">${new Date(request.request_date).toLocaleDateString()}</td>
+                <td class="is-hidden-mobile has-text-light">${request.activity_type}</td>
+                <td class="has-text-light">
+                    ${request.pickup_canton} (${request.pickup_province}) / ${request.destination_canton} (${request.destination_province})
+                </td>
+                <td>
+                    <button class="button is-small is-rounded is-primary" onclick="viewReceipt(JSON.parse(decodeURIComponent('${dataString}')))">
+                        <span class="icon"><i class="fas fa-file-invoice"></i></span>
+                        <span>Ver Factura</span>
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+    
+    // Función para manejar la apertura del Modal de Recibo
+    function viewReceipt(requestData) {
+        const receiptContainer = document.getElementById('receipt-content');
+        receiptContainer.innerHTML = generateReceipt(requestData);
+        document.getElementById('receipt-modal').classList.add('is-active');
+    }
+
+    function closeReceiptModal() {
+        document.getElementById('receipt-modal').classList.remove('is-active');
+    }
+    
+    // Función para formatear y mostrar los datos de la solicitud (Recibo/Factura)
+    function generateReceipt(data) {
+        let receipt = `
+            <!-- Clase de fondo eliminada para que sea transparente/herede el color del tema base -->
+            <div class="box p-5" style="border-radius: 8px;">
+                <h3 class="title is-4 has-text-centered has-text-warning">FACTURA / RECIBO DE SOLICITUD</h3>
+                <p class="subtitle is-6 has-text-centered has-text-grey-light">Solicitud # ${data.request_number}</p>
+                <hr style="background-color: #555;">
+                
+                <p class="is-size-6 has-text-light"><strong>Fecha de Solicitud:</strong> ${new Date(data.request_date).toLocaleString()}</p>
+                <p class="is-size-6 has-text-light"><strong>Tipo de Actividad:</strong> ${data.activity_type}</p>
+                
+                <hr style="background-color: #555;">
+
+                <p class="is-size-5 has-text-warning has-text-weight-bold">Información del Recorrido</p>
+                <p class="has-text-light"><strong>Recogida:</strong> ${data.pickup_province}, ${data.pickup_canton}</p>
+                <p class="has-text-light ml-4">Señas: ${data.pickup_señas}</p>
+                <p class="has-text-light mt-2"><strong>Destino:</strong> ${data.destination_province}, ${data.destination_canton}</p>
+                <p class="has-text-light ml-4">Señas: ${data.destination_señas}</p>
+                
+                ${data.notes ? `<p class="has-text-light mt-4"><strong>Notas Generales:</strong> ${data.notes}</p>` : ''}
+                
+                ${data.entity_name ? `
+                    <hr style="background-color: #555;">
+                    <p class="is-size-5 has-text-warning has-text-weight-bold">Detalles de la Entidad (Facturación)</p>
+                    <p class="has-text-light"><strong>Entidad:</strong> ${data.entity_name}</p>
+                    <p class="has-text-light"><strong>Teléfono Empresa:</strong> ${data.entity_phone}</p>
+                    ${data.entity_notes ? `<p class="has-text-light"><strong>Notas Entidad:</strong> ${data.entity_notes}</p>` : ''}
+                ` : ''}
+
+                <hr style="background-color: #555;">
+                <p class="has-text-centered has-text-grey-light">--- Fin del Recibo ---</p>
+            </div>
+        `;
+        return receipt;
+    }
+
+
+    // Inicialización: Ocultar la sección de detalles al cargar
+    document.addEventListener('DOMContentLoaded', () => {
+        // La sección de detalles ya tiene display:none en el HTML, 
+        // pero aseguramos que la lista completa esté visible por defecto.
+        document.getElementById('user_details_section').style.display = 'none';
+        document.getElementById('all_users_section').style.display = 'block';
+        document.getElementById('search_message').textContent = 'Ingrese un nombre de usuario y presione Buscar.';
+    });
+
+</script>
+
+{% endblock %}

@@ -1,19 +1,40 @@
 import sqlite3
+import os
 
-DATABASE_NAME = 'db.db'
+# Definir la ruta de la base de datos dentro de un directorio 'instance'
+# Esto es una buena práctica en Flask
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE_PATH = os.path.join(BASE_DIR, 'instance', 'db.db')
+# Asegurarse de que el directorio 'instance' exista
+os.makedirs(os.path.join(BASE_DIR, 'instance'), exist_ok=True)
+
 
 def get_db_connection():
     """Establece y retorna una conexión a la base de datos SQLite."""
-    conn = sqlite3.connect(DATABASE_NAME)
+    # Usamos la ruta completa para asegurar la conexión
+    conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row  # Permite acceder a los datos por nombre de columna
     return conn
+
+def get_last_request_number(cursor, user_id):
+    """Obtiene el último número de solicitud para un user_id dado."""
+    cursor.execute(
+        'SELECT request_number FROM requests WHERE user_id = ? ORDER BY id DESC LIMIT 1',
+        (user_id,)
+    )
+    result = cursor.fetchone()
+    if result:
+        # Devuelve el número de solicitud como entero
+        return int(result['request_number'])
+    return 0 # Si no hay solicitudes, devuelve 0
+
 
 def create_tables():
     """Crea las tablas 'users' y 'requests' si no existen."""
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Tabla de Usuarios
+    # Tabla de Usuarios (se mantiene igual)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,9 +52,34 @@ def create_tables():
         CREATE TABLE IF NOT EXISTS requests (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
-            pickup_location TEXT NOT NULL,
-            destination TEXT NOT NULL,
+            
+            -- Nuevo campo consecutivo por usuario
+            request_number TEXT NOT NULL,
+            
+            -- Información de la Entidad/Solicitud
+            request_type TEXT NOT NULL, -- SI / NO
+            entity_name TEXT,
+            entity_phone TEXT,
+            entity_notes TEXT,
+            
+            -- Información del Recorrido
+            activity_type TEXT NOT NULL,
+            
+            -- Lugar de Recogida
+            pickup_province TEXT NOT NULL,
+            pickup_canton TEXT NOT NULL,
+            pickup_señas TEXT NOT NULL,
+            pickup_map_link TEXT,
+            
+            -- Destino
+            destination_province TEXT NOT NULL,
+            destination_canton TEXT NOT NULL,
+            destination_señas TEXT NOT NULL,
+            destination_map_link TEXT,
+            
+            -- Notas generales del recorrido
             notes TEXT,
+            
             request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users (id)
         )

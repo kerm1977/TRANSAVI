@@ -1,6 +1,6 @@
 <nav class="navbar" role="navigation" aria-label="main navigation" id="app-navbar">
     <div class="navbar-brand">
-        <a class="navbar-item" href="{{ url_for('index') }}">
+        <a class="navbar-item" href="{{ url_for('home') }}">
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo de TRANSAVI C.R." class="is-rounded" style="max-height: 2.25rem;">
             <span class="is-size-6 has-text-weight-bold has-text-white ml-2 is-hidden-mobile-314">TRANSAVI C.R.</span>
         </a>
@@ -23,10 +23,17 @@
 
     <div id="navbarBasicExample" class="navbar-menu">
         <div class="navbar-end">
-            <!-- Los enlaces ahora están dentro de navbar-end para alinearlos a la derecha -->
-            <a class="navbar-item" href="{{ url_for('index') }}">
+            <!-- Enlace a Inicio -->
+            <a class="navbar-item" href="{{ url_for('home') }}">
                 Inicio
             </a>
+            
+            <!-- Enlace a Panel Admin - Usando el endpoint correcto del Blueprint -->
+            <a class="navbar-item has-text-warning has-text-weight-bold" href="{{ url_for('solicitudes_bp.solicitudes') }}">
+                <span class="icon is-small mr-1"><i class="fas fa-user-cog"></i></span>
+                Panel Admin
+            </a>
+            
             <div class="navbar-item">
                 <div class="buttons">
                     <!-- Botones adicionales, si los hubiera -->
@@ -35,3 +42,4 @@
         </div>
     </div>
 </nav>
+    
