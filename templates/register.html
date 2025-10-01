@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Registro de Administrador{% endblock %}
+
+{% block content %}
+<script>
+    // Función para alternar la visibilidad de la contraseña
+    function togglePasswordVisibility(id, iconId) {
+        const passwordInput = document.getElementById(id);
+        const toggleIcon = document.getElementById(iconId);
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+</script>
+
+<div class="centered-form-wrapper">
+    <div class="header has-text-centered mb-5">
+        <h1 class="title is-2 has-text-primary">Crear Nueva Cuenta de Administrador</h1>
+        <p class="subtitle is-5 has-text-grey">
+            Completa tus datos para crear tu acceso al panel de administración.
+        </p>
+        <!-- Mensajes Flash de Flask -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="messages mt-4">
+                    {% for category, message in messages %}
+                        <div class="notification is-{{ 'danger' if category == 'error' else 'success' }} is-light">
+                            <button class="delete"></button>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Formulario de Registro -->
+    <div class="form-card-container">
+        <!-- El action apunta a la ruta de registro del Blueprint admin_bp -->
+        <form action="{{ url_for('admin_bp.register') }}" method="post">
+            
+            <div class="field">
+                <label class="label" for="first_name">Nombre:</label>
+                <div class="control">
+                    <input class="input is-rounded" type="text" id="first_name" name="first_name" required>
+                </div>
+            </div>
+            
+            <div class="field">
+                <label class="label" for="first_lastname">Primer Apellido:</label>
+                <div class="control">
+                    <input class="input is-rounded" type="text" id="first_lastname" name="first_lastname" required>
+                </div>
+            </div>
+            
+            <div class="field">
+                <label class="label" for="second_lastname">Segundo Apellido:</label>
+                <div class="control">
+                    <input class="input is-rounded" type="text" id="second_lastname" name="second_lastname" required>
+                </div>
+            </div>
+            
+            <div class="field">
+                <label class="label" for="phone">Teléfono (Ej: 88227500):</label>
+                <div class="control">
+                    <input class="input is-rounded" type="tel" id="phone" name="phone" required>
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label" for="email">Email:</label>
+                <div class="control">
+                    <input class="input is-rounded" type="email" id="email" name="email" placeholder="email@ejemplo.com" required>
+                </div>
+            </div>
+            
+            <!-- Campo de Contraseña -->
+            <div class="field">
+                <label class="label" for="password">Contraseña:</label>
+                <div class="control has-icons-right">
+                    <input class="input is-rounded" type="password" id="password" name="password" placeholder="Crea tu contraseña" required>
+                    <span class="icon is-right is-clickable" onclick="togglePasswordVisibility('password', 'password-toggle')">
+                        <i id="password-toggle" class="fas fa-eye"></i>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Campo de Verificar Contraseña -->
+            <div class="field">
+                <label class="label" for="confirm_password">Verificar Contraseña:</label>
+                <div class="control has-icons-right">
+                    <input class="input is-rounded" type="password" id="confirm_password" name="confirm_password" placeholder="Confirma tu contraseña" required>
+                    <span class="icon is-right is-clickable" onclick="togglePasswordVisibility('confirm_password', 'confirm-password-toggle')">
+                        <i id="confirm-password-toggle" class="fas fa-eye"></i>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="field is-grouped is-grouped-centered mt-6">
+                <div class="control">
+                    <button type="submit" class="button is-primary is-large is-rounded">
+                        <span class="icon">
+                            <i class="fas fa-user-plus"></i>
+                        </span>
+                        <span>Registrar Administrador</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <div class="has-text-centered mt-4">
+        <p class="has-text-grey">¿Ya tienes cuenta? 
+            <!-- Enlace al formulario de login -->
+            <a href="{{ url_for('admin_bp.login') }}" class="has-text-warning has-text-weight-bold">Inicia Sesión</a>
+        </p>
+    </div>
+
+</div>
+
+<!-- Script para cerrar notificaciones de Bulma -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+            const $notification = $delete.parentNode;
+            $delete.addEventListener('click', () => {
+                $notification.parentNode.removeChild($notification);
+            });
+        });
+    });
+</script>
+
+{% endblock %}

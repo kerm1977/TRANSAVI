@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Iniciar Sesión de Administrador{% endblock %}
+
+{% block content %}
+<script>
+    // Función para alternar la visibilidad de la contraseña
+    function togglePasswordVisibility(id, iconId) {
+        const passwordInput = document.getElementById(id);
+        const toggleIcon = document.getElementById(iconId);
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+</script>
+
+<div class="centered-form-wrapper">
+<div class="header has-text-centered mb-5">
+    <h1 class="is-size-1">Acceso de Administrador</h1>
+    <p class="subtitle is-5 has-text-grey">
+        Ingresa tu Email y Contraseña para acceder al panel de solicitudes.
+    </p>
+    <!-- Mensajes Flash de Flask -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="messages mt-4">
+                {% for category, message in messages %}
+                    <div class="notification is-{{ 'danger' if category == 'error' else 'success' }} is-light">
+                        <button class="delete"></button>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+</div>
+
+<!-- Formulario de Login -->
+<div class="form-card-container">
+    <!-- El action apunta a la ruta de login del Blueprint admin_bp -->
+    <form action="{{ url_for('admin_bp.login') }}" method="post">
+        
+        <div class="field">
+            <label class="label" for="email">Email:</label>
+            <div class="control">
+                <input class="input is-rounded" type="email" id="email" name="email" placeholder="email@ejemplo.com" required>
+            </div>
+        </div>
+        
+        <div class="field">
+            <label class="label" for="password">Contraseña:</label>
+            <div class="control has-icons-right">
+                <!-- Input de Contraseña -->
+                <input class="input is-rounded" type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required>
+                <!-- Icono de Ojo para alternar visibilidad -->
+                <span class="icon is-right is-clickable" onclick="togglePasswordVisibility('password', 'password-toggle')">
+                    <i id="password-toggle" class="fas fa-eye"></i>
+                </span>
+            </div>
+        </div>
+        
+        <!-- Checkbox de Recordar Contraseña -->
+        <div class="field">
+            <div class="control">
+                <label class="checkbox">
+                    <input type="checkbox" name="remember_me">
+                    Recordar Contraseña
+                </label>
+            </div>
+        </div>
+
+        <div class="field is-grouped is-grouped-centered mt-6">
+            <div class="control">
+                <button type="submit" class="button is-warning is-large is-rounded">
+                    <span class="icon">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </span>
+                    <span>Iniciar Sesión</span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="has-text-centered mt-4">
+    <p class="has-text-grey">¿No tienes cuenta de administrador? 
+        <!-- Enlace al formulario de registro de administrador -->
+        <a href="{{ url_for('admin_bp.register') }}" class="has-text-primary has-text-weight-bold">Regístrate aquí</a>
+    </p>
+</div>
+
+</div>
+
+<!-- Script para cerrar notificaciones de Bulma -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Lógica para cerrar mensajes flash
+    (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+        const $notification = $delete.parentNode;
+        $delete.addEventListener('click', () => {
+            $notification.parentNode.removeChild($notification);
+        });
+    });
+});
+</script>
+
+{% endblock %}

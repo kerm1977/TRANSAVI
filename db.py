@@ -30,11 +30,11 @@ def get_last_request_number(cursor, user_id):
 
 
 def create_tables():
-    """Crea las tablas 'users' y 'requests' si no existen."""
+    """Crea las tablas 'users', 'requests' y la nueva tabla 'admins' si no existen."""
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Tabla de Usuarios (se mantiene igual)
+    # Tabla de Usuarios (Cuentas de Solicitud/Clientes)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,7 +46,18 @@ def create_tables():
             email TEXT NOT NULL UNIQUE
         )
     ''')
-    
+
+    # NUEVA TABLA: Administradores (Cuentas de Superusuario)
+    # Nota: En una aplicación real, la contraseña debe estar hasheada.
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS admins (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL, 
+            role TEXT DEFAULT 'admin' -- Rol simple para diferenciar
+        )
+    ''')
+
     # Tabla de Solicitudes
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS requests (
@@ -84,6 +95,14 @@ def create_tables():
             FOREIGN KEY (user_id) REFERENCES users (id)
         )
     ''')
+    
+    # OPCIONAL: Insertar un administrador inicial si la tabla está vacía
+    cursor.execute("SELECT COUNT(*) FROM admins")
+    if cursor.fetchone()[0] == 0:
+        # Administrador por defecto: admin / 12345
+        # NOTA: En producción, usar una contraseña hasheada como hash(12345)
+        cursor.execute("INSERT INTO admins (username, password) VALUES (?, ?)", ('admin', '12345'))
+        print("Administrador inicial creado: Usuario='admin', Contraseña='12345'")
     
     conn.commit()
     conn.close()

@@ -1,25 +1,32 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session # Agregamos 'session'
 import db
 import users
-# IMPORTACIÓN CRUCIAL: Importamos el Blueprint
+# IMPORTACIÓN CRUCIAL: Importamos los Blueprints
 from solicitudes import solicitudes_bp 
+from admin import admin_bp # <--- NUEVA IMPORTACIÓN
 
 # Inicializa la aplicación de Flask
 app = Flask(__name__)
 # Clave secreta para mensajes flash (¡IMPORTANTE!)
 app.secret_key = os.urandom(24)
 
-# REGISTRO CRUCIAL: Registramos el Blueprint para que sus rutas estén disponibles
+# REGISTRO CRUCIAL: Registramos los Blueprints
 app.register_blueprint(solicitudes_bp)
+app.register_blueprint(admin_bp) # <--- NUEVO REGISTRO
 
 # LLAMADA CRUCIAL: Asegura que la base de datos y las tablas se creen al iniciar la aplicación.
 db.create_tables()
 
 @app.route('/')
 def home():
-    """Ruta para la página de inicio."""
-    return render_template('home.html')
+    """
+    Ruta para la página de inicio. Ahora redirige directamente al formulario,
+    ya que la solicitud de servicio ya no requiere login.
+    """
+    # Redirigimos directamente a la ruta del formulario.
+    return redirect(url_for('index'))
+
 
 # Endpoint para verificación de existencia de usuario (AJAX)
 @app.route('/check_username', methods=['GET'])
@@ -136,14 +143,19 @@ def find_request_details():
 
 @app.route('/solicitar', methods=['POST'])
 def solicitar_transporte():
-    """Ruta que procesa el formulario de solicitud de transporte y guarda los datos."""
+    """
+    Ruta que procesa el formulario de solicitud de transporte y guarda los datos.
+    Se ejecuta con la lógica de autenticación/registro que estaba en el app.py original,
+    permitiendo a usuarios nuevos o existentes enviar solicitudes sin necesidad de login.
+    """
     
     # --- 1. Obtiene datos del Flujo de Usuario ---
+    # Ya no chequeamos la sesión, sino que usamos la lógica de index.html
     has_user = request.form['has_user']
     user_id = None
     username = None
     
-    # Variables de usuario (pueden venir de campos individuales o ser pre-existentes)
+    # Variables de usuario
     first_name = request.form.get('first_name', '')
     first_lastname = request.form.get('first_lastname', '')
     second_lastname = request.form.get('second_lastname', '')
@@ -155,17 +167,18 @@ def solicitar_transporte():
 
     try:
         if has_user == 'SI':
-            # Flujo 1: Usuario Existente
+            # Flujo 1: Usuario Existente (Requiere username)
             username_input = request.form['username']
             user_data = users.find_user_by_username(cursor, username_input)
             
             if user_data:
                 user_id = user_data['id']
                 username = user_data['username']
-                # Mensaje para usuario existente
+                # Nota: Si el usuario existe y completó los datos, podrías actualizar sus campos aquí
+                # Pero por simplicidad, solo confirmamos la identidad.
                 flash(f'¡Usuario {username} autenticado! Tu solicitud ha sido registrada.', 'success')
             else:
-                flash('El usuario no existe. Por favor, verifica el nombre de usuario.', 'error')
+                flash('El usuario no existe. Por favor, verifica el nombre de usuario o selecciona "No".', 'error')
                 return redirect(url_for('index'))
 
         else:
@@ -176,14 +189,17 @@ def solicitar_transporte():
                 
             new_username = users.generate_custom_username(first_name, first_lastname, second_lastname, phone)
             
-            if users.find_user_by_email(cursor, email):
+            # Buscamos si el email o el username generado ya existen
+            existing_user_by_email = users.find_user_by_email(cursor, email)
+            existing_user_by_username = users.find_user_by_username(cursor, new_username)
+            
+            if existing_user_by_email:
                 flash(f'El email {email} ya está registrado. Por favor, selecciona "Sí" en "¿Ya tienes un usuario?"', 'error')
                 return redirect(url_for('index'))
             
-            if users.find_user_by_username(cursor, new_username):
-                 # Si el username generado ya existe, se podría añadir un sufijo aleatorio, 
-                 # pero por ahora lo tratamos como un error para simplificar
-                 flash('Error: El nombre de usuario generado ya existe. Por favor, contacta a soporte.', 'error')
+            if existing_user_by_username:
+                 # Si el username generado ya existe, se podría añadir un sufijo
+                 flash('Error: El nombre de usuario generado ya existe. Intenta con otro teléfono o nombre.', 'error')
                  return redirect(url_for('index'))
             
             # Crea el nuevo usuario
@@ -205,8 +221,6 @@ def solicitar_transporte():
         
         # 3.1 Generar el número de solicitud consecutivo (0001, 0002, etc.)
         last_request_num = db.get_last_request_number(cursor, user_id)
-        
-        # AQUI EL VALOR DE new_request_num NO DEBE SER CONCATENADO CON NADA.
         new_request_num = str(last_request_num + 1).zfill(4) # Formato 0001, 0002...
 
         # 3.2 Obtiene datos del Recorrido y Entidad
@@ -257,24 +271,25 @@ def solicitar_transporte():
 
 
     except Exception as e:
+        conn.rollback()
         print(f"Error al procesar la solicitud: {e}") 
         flash(f'Ocurrió un error al procesar tu solicitud. Error interno: {e}', 'error')
     finally:
         conn.close()
 
+    # Redirigir al formulario, mostrando el mensaje flash.
     return redirect(url_for('index'))
 
 @app.route('/formulario')
 def index():
-    """Ruta para la página del formulario."""
+    """Ruta para la página del formulario. Abierta a todo público."""
+    # Eliminamos el chequeo de sesión para permitir el acceso directo al formulario.
     return render_template('index.html')
 
 if __name__ == '__main__':
     # Usar un puerto diferente ya que el 5000 puede estar en uso en algunos entornos.
     # Si estás ejecutando localmente, puedes cambiar el puerto.
     app.run(host='0.0.0.0', debug=True, port=3030)
-
-
 
 # Migraciones Cmder
         # set FLASK_APP=app.py     <--Crea un directorio de migraciones

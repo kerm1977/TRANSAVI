@@ -1,12 +1,28 @@
 import sqlite3
-# Importamos Blueprint en lugar de Flask para encapsular las rutas
-from flask import Blueprint, render_template, g, url_for, jsonify
+# Importamos Blueprint, redirect, url_for, flash, session para la protección de ruta
+from flask import Blueprint, render_template, g, url_for, jsonify, redirect, flash, session
+from functools import wraps
 
 # Creamos el Blueprint (Plano) para todas las rutas relacionadas con solicitudes
 # El nombre del blueprint es 'solicitudes_bp' y su prefijo de URL es '/solicitudes'
 solicitudes_bp = Blueprint('solicitudes_bp', __name__, url_prefix='/solicitudes')
 
 DATABASE = 'db.db'
+
+# --- Decorador de Protección de Ruta ---
+def login_required(f):
+    """
+    Decorador que verifica si el administrador está logueado.
+    Redirige al login del admin si no lo está.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get('admin_id') is None:
+            flash('Acceso restringido. Por favor, inicie sesión como administrador.', 'error')
+            return redirect(url_for('admin_bp.login'))
+        return f(*args, **kwargs)
+    return decorated_function
+# --------------------------------------
 
 # --- Funciones de Utilidad de Base de Datos ---
 
@@ -27,9 +43,8 @@ def close_connection(exception):
 
 # --- Endpoint principal del Panel de Solicitudes ---
 
-# La ruta aquí es solo '/', pero la URL completa será '/solicitudes/' debido al url_prefix
 @solicitudes_bp.route('/', methods=['GET'])
-# Se renombra la función a 'solicitudes' para que el endpoint sea 'solicitudes_bp.solicitudes'
+@login_required # <--- APLICAMOS EL DECORADOR DE PROTECCIÓN
 def solicitudes(): 
     """
     Ruta para mostrar el panel de administración con la lista de usuarios
@@ -60,9 +75,6 @@ def solicitudes():
         # Convertimos los Rows a diccionarios para Jinja
         users_data = [dict(row) for row in cursor.fetchall()]
 
-        # Nota: Aquí se está pasando la lista completa, pero para una aplicación grande 
-        # se debería implementar paginación.
-
         return render_template('solicitudes.html', users=users_data)
 
     except sqlite3.Error as e:
@@ -72,6 +84,7 @@ def solicitudes():
 
 # --- Endpoint API para el Detalle de Solicitud (Requiere JSON/AJAX) ---
 @solicitudes_bp.route('/user_requests/<string:username>', methods=['GET'])
+@login_required # <--- APLICAMOS EL DECORADOR DE PROTECCIÓN
 def api_user_requests(username):
     """
     Endpoint para obtener el detalle de todas las solicitudes de un usuario específico 
@@ -92,16 +105,15 @@ def api_user_requests(username):
         user_id = user_data['id']
 
         # 2. Obtener todas las solicitudes (facturas) de ese usuario
-        # Se asume que la tabla 'requests' tiene un campo llamado 'user_id' y otros campos relevantes como 'request_number'
         request_query = """
         SELECT 
             id, 
             request_number, 
             request_date,
-            origin_province,
+            pickup_province,
             destination_province,
-            service_type,
-            total_price
+            activity_type,
+            notes
             -- Agrega todos los campos relevantes de tu tabla requests aquí
         FROM requests 
         WHERE user_id = ? 

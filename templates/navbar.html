@@ -1,6 +1,7 @@
 <nav class="navbar" role="navigation" aria-label="main navigation" id="app-navbar">
     <div class="navbar-brand">
-        <a class="navbar-item" href="{{ url_for('home') }}">
+        <!-- CRUCIAL: Modificado para apuntar a login.html -->
+        <a class="navbar-item" href="{{ url_for('admin_bp.login') }}">
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo de TRANSAVI C.R." class="is-rounded" style="max-height: 2.25rem;">
             <span class="is-size-6 has-text-weight-bold has-text-white ml-2 is-hidden-mobile-314">TRANSAVI C.R.</span>
         </a>
@@ -23,8 +24,8 @@
 
     <div id="navbarBasicExample" class="navbar-menu">
         <div class="navbar-end">
-            <!-- Enlace a Inicio -->
-            <a class="navbar-item" href="{{ url_for('home') }}">
+            <!-- Enlace a Inicio (Login) -->
+            <a class="navbar-item" href="{{ url_for('admin_bp.login') }}">
                 Inicio
             </a>
             
@@ -36,10 +37,21 @@
             
             <div class="navbar-item">
                 <div class="buttons">
-                    <!-- Botones adicionales, si los hubiera -->
+                    <!-- Botón de Formulario (Solicitud de Transporte) - CORREGIDO A url_for('index') -->
+                    <a class="button is-primary is-rounded has-text-weight-bold is-hidden-mobile" href="{{ url_for('index') }}">
+                        <span class="icon is-small"><i class="fas fa-car-side"></i></span>
+                        <span>Solicitar Transporte</span>
+                    </a>
+                    
+                    <!-- NUEVO: Botón de Cerrar Sesión -->
+                    {% if session.get('user_id') %}
+                    <a class="button is-dark is-rounded has-text-weight-bold is-hidden-mobile" href="{{ url_for('admin_bp.logout') }}">
+                        <span class="icon is-small"><i class="fas fa-sign-out-alt"></i></span>
+                        <span>Cerrar Sesión</span>
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </nav>
-    
